@@ -42,6 +42,11 @@ def splineRunner(chassis, tibia, phase, type):
 	if(phase >= 180):
 		leg2_counter = ((1.0*phase)/360.0)*len(chassis)
 		leg1_counter = ((2.0*phase)/360.0)*len(chassis)
+		
+	flag = 1
+	startFemur = 400
+	startTibia = 450 
+
 	for i in range(1):
 		for i in range(len(chassis)):
 			if leg1_counter >= len(chassis):
@@ -53,44 +58,224 @@ def splineRunner(chassis, tibia, phase, type):
 			if leg4_counter >= len(chassis):
 				leg4_counter -= len(chassis)
 			
+			#run for percentages
 			if type == 1:
-				chassisOutput = chassis[leg1_counter]*(chassis_max-chassis_min) + chassis_min
-				tibiaOutput = tibia[leg1_counter]*(tibia_max-tibia_min)+tibia_min
-				outputMotor(chassisOutput, tibiaOutput, 0, 1)
+				chassisOutput1 = chassis[leg1_counter]*(chassis_max-chassis_min) + chassis_min
+				tibiaOutput1 = tibia[leg1_counter]*(tibia_max-tibia_min)+tibia_min
 				
-				chassisOutput = chassis[leg2_counter]*(chassis_max-chassis_min) + chassis_min
-				tibiaOutput = tibia[leg2_counter]*(tibia_max-tibia_min)+tibia_min
-				outputMotor(chassisOutput, tibiaOutput, 2, 3)					
+				chassisOutput2 = chassis[leg2_counter]*(chassis_max-chassis_min) + chassis_min
+				tibiaOutput2 = tibia[leg2_counter]*(tibia_max-tibia_min)+tibia_min
 	
-				chassisOutput = chassis[leg3_counter]*(chassis_max-chassis_min) + chassis_min
-				tibiaOutput = tibia[leg3_counter]*(tibia_max-tibia_min)+tibia_min
-				outputMotor(chassisOutput, tibiaOutput, 4, 5)
+				chassisOutput3 = chassis[leg3_counter]*(chassis_max-chassis_min) + chassis_min
+				tibiaOutput3 = tibia[leg3_counter]*(tibia_max-tibia_min)+tibia_min
 	
-				chassisOutput = chassis[leg4_counter]*(chassis_max-chassis_min) + chassis_min
-				tibiaOutput = tibia[leg4_counter]*(tibia_max-tibia_min)+tibia_min
-				outputMotor(chassisOutput, tibiaOutput, 6, 7)
+				chassisOutput4 = chassis[leg4_counter]*(chassis_max-chassis_min) + chassis_min
+				tibiaOutput4 = tibia[leg4_counter]*(tibia_max-tibia_min)+tibia_min
 
+				#on first run, smooth run to first movement	
+				if flag == 1:	
+					while(startFemur != int(chassisOutput1)):
+						pwm.set_pwm(0, 0, int(startFemur))
+						if startFemur < chassisOutput1:
+							startFemur+=1
+						elif startFemur > chassisOutput1:
+							startFemur-=1
+						time.sleep(0.005)
+
+											
+					while(startTibia != int(tibiaOutput1)):
+						pwm.set_pwm(1, 0, int(startTibia))
+						if(startTibia < tibiaOutput1):
+							startTibia+=1
+						elif(startTibia > tibiaOutput1):
+							startTibia-=1
+						time.sleep(0.005)
+
+
+					startFemur = 400
+					startTibia = 450					
+
+
+					while(startFemur != int(chassisOutput2)):
+						pwm.set_pwm(2, 0, int(startFemur))
+						if (startFemur < chassisOutput2):
+							startFemur+=1
+						elif (startFemur > chassisOutput2):
+							startFemur-=1					
+						time.sleep(0.005)
+
+					while(startTibia != int(tibiaOutput2)):
+						pwm.set_pwm(3, 0, int(startTibia))
+						if (startTibia < tibiaOutput2):
+							startTibia+=1
+						elif (startTibia > tibiaOutput2):
+							startTibia-=1
+						time.sleep(0.005)
+
+
+					startFemur = 400
+					startTibia = 450					
+
+					
+					while(startFemur != int(chassisOutput3)):
+						pwm.set_pwm(4, 0, int(startFemur))
+						if (startFemur < chassisOutput3):
+							startFemur+=1
+						elif (startFemur > chassisOutput3):
+							startFemur-=1					
+						time.sleep(0.005)
+
+
+					while(startTibia != int(tibiaOutput3)):
+						pwm.set_pwm(5, 0, int(startTibia))
+						if (startTibia < tibiaOutput3):
+							startTibia+=1
+						elif (startTibia > tibiaOutput3):
+							startTibia-=1
+						time.sleep(0.005)
+
+					
+					startFemur = 400
+					startTibia = 450					
+
+					while(startFemur != int(chassisOutput4)):
+						pwm.set_pwm(6, 0, int(startFemur))
+						if (startFemur < chassisOutput4):
+							startFemur+=1
+						elif (startFemur > chassisOutput4):
+							startFemur-=1
+						time.sleep(0.005)
+							
+					
+					while(startTibia != int(tibiaOutput4)):
+						pwm.set_pwm(7, 0, int(startTibia))
+						if (startTibia < tibiaOutput4):
+							startTibia+=1
+						elif (startTibia > tibiaOutput4):
+							startTibia-=1
+						time.sleep(0.005)
+					
+					startFemur = 400
+					startTibia = 450
+					flag = 2
+					
+
+
+				outputMotor(chassisOutput1, tibiaOutput1, 0, 1)
+				outputMotor(chassisOutput2, tibiaOutput2, 2, 3)					
+				outputMotor(chassisOutput3, tibiaOutput3, 4, 5)
+				outputMotor(chassisOutput4, tibiaOutput4, 6, 7)
+			
+			#run for motor angles
 			elif type == 2:
-				chassisOutput = chassis[leg1_counter]
-				tibiaOutput = tibia[leg1_counter]
-				outputMotor(chassisOutput, tibiaOutput, 0, 1)
+				chassisOutput1 = chassis[leg1_counter]
+				tibiaOutput1 = tibia[leg1_counter]
 				
-				chassisOutput = chassis[leg2_counter]
-				tibiaOutput = tibia[leg2_counter]
-				outputMotor(chassisOutput, tibiaOutput, 2, 3)	
+				chassisOutput2 = chassis[leg2_counter]
+				tibiaOutput2 = tibia[leg2_counter]
 
-				chassisOutput = chassis[leg3_counter]
-				tibiaOutput = tibia[leg3_counter]
-				outputMotor(chassisOutput, tibiaOutput, 4, 5)
+				chassisOutput3 = chassis[leg3_counter]
+				tibiaOutput3 = tibia[leg3_counter]
 
-				chassisOutput = chassis[leg4_counter]
-				tibiaOutput = tibia[leg4_counter]	
-				outputMotor(chassisOutput, tibiaOutput, 6, 7)
+				chassisOutput4 = chassis[leg4_counter]
+				tibiaOutput4 = tibia[leg4_counter]	
+				
+				#on first run, smooth run to first movement
+				if flag == 1:	
+					while(startFemur != int(chassisOutput1)):
+						pwm.set_pwm(0, 0, int(startFemur))
+						if (startFemur < chassisOutput1):
+							startFemur+=1
+						elif (startFemur > chassisOutput1):
+							startFemur-=1					
+						time.sleep(0.005)
+
+					while(startTibia != int(tibiaOutput1)):
+						pwm.set_pwm(1, 0, int(startTibia))
+						if (startTibia < tibiaOutput1):
+							startTibia+=1
+						elif (startTibia > tibiaOutput1):
+							startTibia-=1
+						time.sleep(0.005)
+
+					
+					startFemur = 400
+					startTibia = 450					
+
+
+					while(startFemur != int(chassisOutput2)):
+						pwm.set_pwm(2, 0, int(startFemur))
+						if (startFemur < chassisOutput2):
+							startFemur+=1
+						elif (startFemur > chassisOutput2):
+							startFemur-=1					
+						time.sleep(0.005)
+
+					while(startTibia != int(tibiaOutput2)):
+						pwm.set_pwm(3, 0, int(startTibia))
+						if (startTibia < tibiaOutput2):
+							startTibia+=1
+						elif (startTibia > tibiaOutput2):
+							startTibia-=1
+						time.sleep(0.005)
+
+					
+					startFemur = 400
+					startTibia = 450					
+					
+
+					while(startFemur != int(chassisOutput3)):
+						pwm.set_pwm(4, 0, int(startFemur))
+						if (startFemur < chassisOutput3):
+							startFemur+=1
+						elif (startFemur > chassisOutput3):
+							startFemur-=1					
+						time.sleep(0.005)
+
+					while(startTibia != int(tibiaOutput3)):
+						pwm.set_pwm(5, 0, int(startTibia))
+						if (startTibia < tibiaOutput3):
+							startTibia+=1
+						elif (startTibia > tibiaOutput3):
+							startTibia-=1
+						time.sleep(0.005)
+
+					
+					startFemur = 400
+					startTibia = 450					
+
+
+					while(startFemur != int(chassisOutput4)):
+						pwm.set_pwm(6, 0, int(startFemur))
+						if (startFemur < chassisOutput4):
+							startFemur+=1
+						elif (startFemur > chassisOutput4):
+							startFemur-=1					
+						time.sleep(0.005)
+
+					while(startTibia != int(tibiaOutput4)):
+						pwm.set_pwm(7, 0, int(startTibia))
+						if (startTibia < tibiaOutput4):
+							startTibia+=1
+						elif (startTibia > tibiaOutput4):
+							startTibia-=1
+						time.sleep(0.005)
+					
+					startFemur = 400
+					startTibia = 450	
+					flag = 2				
+
+
+				outputMotor(chassisOutput1, tibiaOutput1, 0, 1)
+				outputMotor(chassisOutput2, tibiaOutput2, 2, 3)	
+				outputMotor(chassisOutput3, tibiaOutput3, 4, 5)
+				outputMotor(chassisOutput4, tibiaOutput4, 6, 7)
+
+
 			leg1_counter+=1
 			leg2_counter+=1
 			leg3_counter+=1
 			leg4_counter+=1
-			#time.sleep(0.01)			
 
 #makes spyndra stand up before running
 def spyndraStand():
@@ -142,8 +327,6 @@ gaitArray = gait.split('[')
 chassis = np.fromstring(gaitArray[1],dtype=float,sep=" ")
 tibia = np.fromstring(gaitArray[2],dtype=float,sep=" ")
 phase = input('Enter phase between legs (in degrees): ')
-#print(chassis)
-#print(tibia)
 spyndraStand()
 splineRunner(chassis, tibia, phase, type)
 spyndraSit()
