@@ -13,8 +13,8 @@ chassis_max = 450
 
 
 #the file path for the gait generator file. Uncomment the one you want to use
-#gaitGenerator = './splinegen.py'
-#gaitGenerator = './standinggait.py'
+#gaitGenerator = './splineGen.py'
+#gaitGenerator = './standingGait.py'
 
 
 pwm.set_pwm_freq(60)	#Sets frequency to 60 Hz
@@ -178,9 +178,9 @@ def obtainGait():
 
 type = input("Type 1 for Random Gait, 2 for Standing Gait: ")
 if(type == 1):
-	gaitGenerator = './splinegen.py'
+	gaitGenerator = './splineGen.py'
 elif(type == 2):
-	gaitGenerator = './standinggait.py'
+	gaitGenerator = './standingGait.py'
 pullMotorVal()
 gait= obtainGait()
 gaitSave = gait

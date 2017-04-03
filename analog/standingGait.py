@@ -1,10 +1,12 @@
+
 import math
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.interpolate import interp1d
 
 #points array of values from 0-1 (to be mapped)
-
+#All femurs 400 except 4 which is 370
+#All tibia 450
 
 def spline_gen(points_femur, points_tibia, period, cycles):
 
@@ -47,21 +49,8 @@ def spline_gen(points_femur, points_tibia, period, cycles):
 	#Pipe f_femur_sample, f_tibia_sample
 	print(f_femur_sample)
 	print(f_tibia_sample)	
-        
 
-def checkVelocityArr(arr):
-        if (abs(arr[4] - arr[3]) > 0.5) or (abs(arr[3] - arr[2]) > 0.5) or (abs(arr[2]-arr[1]) > 0.5) or (abs(arr[1] - arr[0]) > 0.5) or (abs(arr[0] - arr[4]) > 0.5):
-                arr = np.random.rand(5)
-                arr = checkVelocityArr(arr)
-                return arr	
-	else:
-        	return arr
-
-	
-
-random_femur = np.random.rand(5)
-random_tibia = np.random.rand(5)
-random_femur = checkVelocityArr(random_femur)
-random_tibia = checkVelocityArr(random_tibia)
-spline_gen(random_femur, random_tibia, 5, 2) #changed 2 to 10 cycles
+standing_femur = [255, 275, 255, 235]
+standing_tibia = [275, 295, 275, 255]
+spline_gen(standing_femur, standing_tibia, 5, 2)
 
