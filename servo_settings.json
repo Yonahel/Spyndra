@@ -1,0 +1,12 @@
+{
+ "chassis servo channels (legs 1-4)": "[0, 2, 4, 6]",
+ "tibia servo channels (legs 1-4)": "[1, 3, 5, 7]",
+ "digital tibia min": "350",
+ "digital tibia max": "450",
+ "digital chassis min": "325",
+ "digital chassis max": "450",
+ "analog tibia min": "275",
+ "analog tibia max": "350",
+ "analog chassis min": "255",
+ "analog chassis max": "300"
+}

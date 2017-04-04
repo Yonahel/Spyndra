@@ -1,16 +1,35 @@
-
+from BNO055 import *
+from datetime import datetime
 import json 
 import numpy as np
 import time
 import Adafruit_PCA9685
 from subprocess import Popen, PIPE
-
+	
 pwm = Adafruit_PCA9685.PCA9685()
 
 tibia_min = 200
 tibia_max = 500
 chassis_min = 200
 chassis_max = 500
+
+#this variable will be used for saving the gyro and accelerometer values of a flat, unoving Spyndra
+IMU_flatMatrix = np.zeros(shape=(2,3))
+
+#we'll keep all IMU data in the next two matrices until it's time to write it out
+#may just write out directly
+IMU_allData = [IMU_flatMatrix]
+IMU_addData_centered = [IMU_flatMatrix]
+
+
+#output file to write IMU data to
+today = datetime.now()
+fileName = today.isoformat()
+IMU_file = './IMU_data/' + fileName
+IMU_output = open(IMU_file,'w')
+
+
+
 
 
 #the file path for the gait generator file. Uncomment the one you want to use
@@ -29,7 +48,7 @@ def pullMotorVal(motorType):
 		tibia_max = parsed_json['analog tibia max']
 		chassis_min = parsed_json['analog chassis min']
 		chassis_max = parsed_json['analog chassis max']
-	elif(motorType == 2)
+	elif(motorType == 2):
 		json_data = open('./servo_settings.json').read()
 		parsed_json = json.loads(json_data)
 		tibia_min = parsed_json['digital tibia min']
@@ -43,7 +62,10 @@ def outputMotor(chassisOutput, tibiaOutput, chassisNum, tibiaNum):
 	pwm.set_pwm(tibiaNum, 0, int(tibiaOutput))
  
 #Outputs the splines according to a phase
-def splineRunner(chassis, tibia, phase, type):
+def splineRunner(chassis, tibia, phase, type, bno, flatMatrix):
+	
+	tick = datetime.now()
+	
 	leg1_counter = ((4.0*phase)/360.0)*len(chassis)
 	leg2_counter = ((3.0*phase)/360.0)*len(chassis)
 	leg3_counter = ((2.0*phase)/360.0)*len(chassis)
@@ -86,6 +108,16 @@ def splineRunner(chassis, tibia, phase, type):
 				outputMotor(chassisOutput3, tibiaOutput3, 4, 5)
 				outputMotor(chassisOutput4, tibiaOutput4, 6, 7)
 			
+				#read data from IMU
+				currentTimeD = tick - datetime.now()
+				currentReading = produceVector(bno)
+				currentEditedReading = currentReading - flatMatrix
+
+				IMU_output.write(str(currentTimeD.total_seconds()) + " ")
+				IMU_output.write(str(currentReading[0])+ ' ' + str(currentReading[1]))
+				IMU_output.write('\n')
+			
+
 			#run for motor angles
 			elif type == 2 or type == 3:
 				chassisOutput1 = chassis[leg1_counter]
@@ -104,6 +136,16 @@ def splineRunner(chassis, tibia, phase, type):
 				outputMotor(chassisOutput2, tibiaOutput2, 2, 3)	
 				outputMotor(chassisOutput3, tibiaOutput3, 4, 5)
 				outputMotor(chassisOutput4, tibiaOutput4, 6, 7)
+
+                                #read data from IMU
+
+				currentTimeD = datetime.now() - tick
+				currentReading = produceVector(bno)
+				currentEditedReading = currentReading - flatMatrix
+
+				IMU_output.write(str(currentTimeD.total_seconds()) + " ")
+				IMU_output.write(str(currentReading[0])+ ' ' + str(currentReading[1]))
+				IMU_output.write('\n')
 
 
 			leg1_counter+=1
@@ -169,12 +211,77 @@ def spyndraSit():
 		outputMotor(endFemur, endTibia, 6, 7)
 		time.sleep(0.01)
 	
+#turns on IMU
+def IMUstart():
+	bno = BNO055()
+	if bno.begin() is not True:
+		print "Error initializing IMU"
+		exit()
+	time.sleep(1)
+	bno.setExternalCrystalUse(True)
+	return bno
+
+def flatIMUdata(bno):
+	flatCounter = 0
+
+	#number of datapoints we get to find definition of flat
+	nDataPoints = 10
+
+	IMU_tempFlatData = np.zeros(shape=(nDataPoints,2,3))
+	
+	#we compute the IMU flat Data nDataPoints times and return the 
+	#median of these. This is done to refer small jump errors
+	while flatCounter < nDataPoints:
+		currentVectors = produceVector(bno)
+		IMU_tempFlatData[flatCounter,0:2,0:3] = currentVectors
+		flatCounter = flatCounter+1
+	
+	return numpy.median(IMU_tempFlatData,axis=0)
+
+#computes the current gyro and accelerometer readings from the IMU
+def produceVector(bno):
+
+	#we round the values to the thousandth place
+	rPlace = 1000
+	matrixData = np.zeros(shape=(2,3))
+	
+	#we obtain the current vectors using the BN0O55 function getVector
+	#euler = degrees of yaw, pitch, and roll
+	#grav = acceleration in x, y and z direction (TODO: double check if that's true)
+	grav = bno.getVector(BNO055.VECTOR_GRAVITY)
+	euler = bno.getVector(BNO055.VECTOR_EULER)
+	
+	#we round the values to the rPlace
+	grav_rounded = (math.ceil(grav[0]*rPlace)/rPlace,math.ceil(grav[1]*rPlace)/rPlace,math.ceil(grav[2]*rPlace)/rPlace)
+        euler_rounded = (math.ceil(euler[0]*rPlace)/rPlace,math.ceil(euler[1]*rPlace)/rPlace, math.ceil(euler[2]*rPlace)/rPlace)
+
+	matrixData[0,0:3] = euler_rounded
+	matrixData[1,0:3] = grav_rounded
+
+	#Euler angles should be from 0 to 360. I've been getting weird errors in which they
+	#jump to ~1000, so I just recompute in that case. 
+	if ((euler_rounded[0] > 360) or (euler_rounded[1]>360) or (euler_rounded[2]>360)):
+                return produceVector(bno)
+
+	#An euler angle of 359 is only 2 degrees from an euler angle of 1 (they wrap around 360)
+	#to make the two values equivalent, I artificially make the euler angle return value
+	#into the absolute difference from 180 (sadly, this does mean we lose information on 
+	#direction of tilt. I only do this to the yaw euler angle because it only becomes
+	#a problem with yaw when measuring balance.
+        if (euler_rounded[0]>180):
+                matrixData[0][0] = abs(euler_rounded[0]-360)
+
+        return matrixData
+
 
 #calls gaitGenerator file and receives arrays from pipeline
 def obtainGait():
 	process = Popen(['python',gaitGenerator], stdout=PIPE, stderr=PIPE)
 	stdout, stderr = process.communicate()
 	return stdout
+
+#start by turning on IMU
+bno = IMUstart()
 
 motorType = input("Type 1 if Analog Servo, 2 if Digital Servo")
 type = input("Type 1 for Random Gait, 2 for Standing Gait, 3 for Manual Gait: ")
@@ -208,7 +315,13 @@ chassis = np.fromstring(gaitArray[1],dtype=float,sep=" ")
 tibia = np.fromstring(gaitArray[2],dtype=float,sep=" ")
 phase = input('Enter phase between legs (in degrees): ')
 spyndraStand()
-splineRunner(chassis, tibia, phase, type)
+
+flat_matrix = flatIMUdata(bno)
+
+splineRunner(chassis, tibia, phase, type,bno,flat_matrix)
+
+IMU_output.close()
+
 spyndraSit()
 save = 0
 if(type == 1):
