@@ -182,7 +182,6 @@ def goToPoint(chassisOutput, tibiaOutput, startFemur, startTibia):
 def spyndraStand():
 	startFemur = 255
 	startTibia = 570
-	#motor4Femur = 370;
 	outputMotor(startFemur, startTibia, 0, 1)
 	outputMotor(startFemur, startTibia, 2, 3)	
 	outputMotor(startFemur, startTibia, 4, 5)
@@ -198,7 +197,6 @@ def spyndraStand():
 def spyndraSit():	
 	endFemur = 255
 	endTibia = 275
-	#motor4Femur = 370
 	outputMotor(endFemur, endTibia, 0, 1)
 	outputMotor(endFemur, endTibia, 2, 3)
 	outputMotor(endFemur, endTibia, 4, 5)
@@ -283,7 +281,7 @@ def obtainGait():
 #start by turning on IMU
 bno = IMUstart()
 
-motorType = input("Type 1 if Analog Servo, 2 if Digital Servo")
+motorType = input("Type 1 if Analog Servo, 2 if Digital Servo: ")
 type = input("Type 1 for Random Gait, 2 for Standing Gait, 3 for Manual Gait: ")
 if(type == 1):
 	gaitGenerator = './splineGen.py'

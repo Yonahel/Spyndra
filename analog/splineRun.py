@@ -29,7 +29,7 @@ def pullMotorVal(motorType):
 		tibia_max = parsed_json['analog tibia max']
 		chassis_min = parsed_json['analog chassis min']
 		chassis_max = parsed_json['analog chassis max']
-	elif(motorType == 2)
+	elif(motorType == 2):
 		json_data = open('./servo_settings.json').read()
 		parsed_json = json.loads(json_data)
 		tibia_min = parsed_json['digital tibia min']
@@ -176,7 +176,7 @@ def obtainGait():
 	stdout, stderr = process.communicate()
 	return stdout
 
-motorType = input("Type 1 if Analog Servo, 2 if Digital Servo")
+motorType = input("Type 1 if Analog Servo, 2 if Digital Servo: ")
 type = input("Type 1 for Random Gait, 2 for Standing Gait, 3 for Manual Gait: ")
 if(type == 1):
 	gaitGenerator = './splineGen.py'
