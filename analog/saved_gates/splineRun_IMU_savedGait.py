@@ -1,16 +1,35 @@
-
+from BNO055 import *
+from datetime import datetime
 import json 
 import numpy as np
 import time
 import Adafruit_PCA9685
 from subprocess import Popen, PIPE
-
+	
 pwm = Adafruit_PCA9685.PCA9685()
 
 tibia_min = 200
 tibia_max = 500
 chassis_min = 200
 chassis_max = 500
+
+#this variable will be used for saving the gyro and accelerometer values of a flat, unoving Spyndra
+IMU_flatMatrix = np.zeros(shape=(2,3))
+
+#we'll keep all IMU data in the next two matrices until it's time to write it out
+#may just write out directly
+IMU_allData = [IMU_flatMatrix]
+IMU_addData_centered = [IMU_flatMatrix]
+
+
+#output file to write IMU data to
+today = datetime.now()
+fileName = today.isoformat()
+IMU_file = './IMU_data/' + fileName
+IMU_output = open(IMU_file,'w')
+
+
+
 
 
 #the file path for the gait generator file. Uncomment the one you want to use
@@ -23,7 +42,7 @@ pwm.set_pwm_freq(60)	#Sets frequency to 60 Hz
 #Pulls Min and Max values for femurs and tibias from the json file
 def pullMotorVal(motorType):
 	if(motorType == 1):
-		json_data = open('../servo_settings.json').read()
+		json_data = open('../../servo_settings.json').read()
 		parsed_json = json.loads(json_data)
 		tibia_min = parsed_json['analog tibia min']
 		tibia_max = parsed_json['analog tibia max']
@@ -43,17 +62,23 @@ def outputMotor(chassisOutput, tibiaOutput, chassisNum, tibiaNum):
 	pwm.set_pwm(tibiaNum, 0, int(tibiaOutput))
  
 #Outputs the splines according to a phase
-def splineRunner(chassis, tibia, phase, type):
+def splineRunner(chassis, tibia, phase, type, bno, flatMatrix):
+	
+	tick = datetime.now()
+	
+	#this determines the number of times the IMU reads data
+	IMU_cycleThreshold = 5
+	IMU_cycleCounter = 1
+	
 	leg1_counter = ((4.0*phase)/360.0)*len(chassis)
 	leg2_counter = ((3.0*phase)/360.0)*len(chassis)
 	leg3_counter = ((2.0*phase)/360.0)*len(chassis)
 	leg4_counter = ((1.0*phase)/360.0)*len(chassis)
-
-	#In the case of a phase greater than 180, leg1 and leg2 must be corrected back to 0 and 180 degrees
 	if(phase >= 180):
 		leg2_counter = ((1.0*phase)/360.0)*len(chassis)
 		leg1_counter = ((2.0*phase)/360.0)*len(chassis)
 		
+	flag = 1
 	startFemur = 255
 	startTibia = 275 
 
@@ -67,6 +92,12 @@ def splineRunner(chassis, tibia, phase, type):
 				leg3_counter -= len(chassis)
 			if leg4_counter >= len(chassis):
 				leg4_counter -= len(chassis)
+
+			#determines whether the IMU will read in the current cycle
+			if IMU_cycleCounter == IMU_cycleThreshold:
+				IMU_cycleCounter = 1
+			else:
+				IMU_cycleCounter+= 1
 			
 			#run for percentages
 			if type == 1:
@@ -87,6 +118,17 @@ def splineRunner(chassis, tibia, phase, type):
 				outputMotor(chassisOutput3, tibiaOutput3, 4, 5)
 				outputMotor(chassisOutput4, tibiaOutput4, 6, 7)
 			
+				#read data from IMU
+				if IMU_cycleCounter == IMU_cycleThreshold:
+					currentTimeD = tick - datetime.now()
+					currentReading, errorCounter = produceVector(bno)
+					currentEditedReading = currentReading - flatMatrix
+
+					IMU_output.write(str(currentTimeD.total_seconds()) + " ")
+					IMU_output.write(str(currentReading[0])+ ' ' + str(currentReading[1]))
+					IMU_output.write('\n')
+			
+
 			#run for motor angles
 			elif type == 2 or type == 3:
 				chassisOutput1 = chassis[leg1_counter]
@@ -106,39 +148,48 @@ def splineRunner(chassis, tibia, phase, type):
 				outputMotor(chassisOutput3, tibiaOutput3, 4, 5)
 				outputMotor(chassisOutput4, tibiaOutput4, 6, 7)
 
+                                #read data from IMU
+                                if IMU_cycleCounter == IMU_cycleThreshold:
+                                        currentTimeD = tick - datetime.now()
+                                        currentReading, errorCounter = produceVector(bno)
+                                        currentEditedReading = currentReading - flatMatrix
 
+                                        IMU_output.write(str(currentTimeD.total_seconds()) + " ")
+                                        IMU_output.write(str(currentReading[0])+ ' ' + str(currentReading[1]))
+                                        IMU_output.write('\n')
+
+				
 			leg1_counter+=1
 			leg2_counter+=1
 			leg3_counter+=1
 			leg4_counter+=1
 
-#function to move motors from standing to first. TODO : Implement
-#def goToPoint(chassisOutput, tibiaOutput, startFemur, startTibia):
-#	for i in range(8):
-#		if i == 0 or i%2 == 0:
-#			while(startFemur != int(chassisOutput[i/2])):
-#				pwm.set_pwm(i, 0, int(startFemur))
-#				if (startFemur < chassisOutput[i/2]):
-#					startFemur+=1
-#				elif (startFemur > chassisOutput[i/2]):
-#					startFemur-=1					
-#				time.sleep(0.005)
-#		else:
-#			while(startTibia != int(tibiaOutput[(i-1)/2])):
-#				pwm.set_pwm(i, 0, int(startTibia))
-#				if (startTibia < tibiaOutput[(i-1)/2]):
-#					startTibia+=1
-#				elif (startTibia > tibiaOutput[(i-1)/2]):
-#					startTibia-=1
-#				time.sleep(0.005)
-#
-#					
-#		startFemur = 255
-#		startTibia = 275					
+def goToPoint(chassisOutput, tibiaOutput, startFemur, startTibia):
+	for i in range(8):
+		if i == 0 or i%2 == 0:
+			while(startFemur != int(chassisOutput[i/2])):
+				pwm.set_pwm(i, 0, int(startFemur))
+				if (startFemur < chassisOutput[i/2]):
+					startFemur+=1
+				elif (startFemur > chassisOutput[i/2]):
+					startFemur-=1					
+				time.sleep(0.005)
+		else:
+			while(startTibia != int(tibiaOutput[(i-1)/2])):
+				pwm.set_pwm(i, 0, int(startTibia))
+				if (startTibia < tibiaOutput[(i-1)/2]):
+					startTibia+=1
+				elif (startTibia > tibiaOutput[(i-1)/2]):
+					startTibia-=1
+				time.sleep(0.005)
+
+					
+		startFemur = 255
+		startTibia = 275					
 
 	
 
-#Stands Spyndra up before spline execution
+#makes spyndra stand up before running
 def spyndraStand():
 	startFemur = 255
 	startTibia = 570
@@ -154,7 +205,6 @@ def spyndraStand():
 		outputMotor(startFemur, startTibia, 6, 7)
 		time.sleep(0.001) 
 		
-#Sits Spyndra back down after spline execution
 def spyndraSit():	
 	endFemur = 255
 	endTibia = 275
@@ -170,6 +220,69 @@ def spyndraSit():
 		outputMotor(endFemur, endTibia, 6, 7)
 		time.sleep(0.01)
 	
+#turns on IMU
+def IMUstart():
+	bno = BNO055()
+	if bno.begin() is not True:
+		print "Error initializing IMU"
+		exit()
+	time.sleep(1)
+	bno.setExternalCrystalUse(True)
+	return bno
+
+def flatIMUdata(bno):
+	flatCounter = 0
+
+	#number of datapoints we get to find definition of flat
+	nDataPoints = 10
+
+	IMU_tempFlatData = np.zeros(shape=(nDataPoints,2,3))
+	
+	#we compute the IMU flat Data nDataPoints times and return the 
+	#median of these. This is done to refer small jump errors
+	while flatCounter < nDataPoints:
+		currentVectors, errorCounter = produceVector(bno)
+		IMU_tempFlatData[flatCounter,0:2,0:3] = currentVectors
+		flatCounter = flatCounter+1
+	
+	return numpy.median(IMU_tempFlatData,axis=0)
+
+#computes the current gyro and accelerometer readings from the IMU
+def produceVector(bno, errorCounter = 0):
+
+	#we round the values to the thousandth place
+	rPlace = 1000
+	matrixData = np.zeros(shape=(2,3))
+	
+	#we obtain the current vectors using the BN0O55 function getVector
+	#euler = degrees of yaw, pitch, and roll
+	#grav = acceleration in x, y and z direction (TODO: double check if that's true)
+	grav = bno.getVector(BNO055.VECTOR_GRAVITY)
+	euler = bno.getVector(BNO055.VECTOR_EULER)
+	
+	#we round the values to the rPlace
+	grav_rounded = (math.ceil(grav[0]*rPlace)/rPlace,math.ceil(grav[1]*rPlace)/rPlace,math.ceil(grav[2]*rPlace)/rPlace)
+        euler_rounded = (math.ceil(euler[0]*rPlace)/rPlace,math.ceil(euler[1]*rPlace)/rPlace, math.ceil(euler[2]*rPlace)/rPlace)
+
+	matrixData[0,0:3] = euler_rounded
+	matrixData[1,0:3] = grav_rounded
+	
+	#This error correction technique below has been shown to be wasteful.
+	#Euler angles should be from 0 to 360. I've been getting weird errors in which they
+	#jump to ~1000, so I just recompute in that case. 
+	#if ((euler_rounded[0] > 360) or (euler_rounded[1]>360) or (euler_rounded[2]>360)):
+        #        return produceVector(bno, errorCounter+1)
+
+	#An euler angle of 359 is only 2 degrees from an euler angle of 1 (they wrap around 360)
+	#to make the two values equivalent, I artificially make the euler angle return value
+	#into the absolute difference from 180 (sadly, this does mean we lose information on 
+	#direction of tilt. I only do this to the yaw euler angle because it only becomes
+	#a problem with yaw when measuring balance.
+        if (euler_rounded[0]>180):
+                matrixData[0][0] = abs(euler_rounded[0]-360)
+
+        return matrixData, errorCounter
+
 
 #calls gaitGenerator file and receives arrays from pipeline
 def obtainGait():
@@ -177,17 +290,17 @@ def obtainGait():
 	stdout, stderr = process.communicate()
 	return stdout
 
-#Queries user for motor type (TODO: Remove this once motors finalized)
-motorType = input("Type 1 if Analog Servo, 2 if Digital Servo: ")
+#start by turning on IMU
+bno = IMUstart()
 
-#Queries user for type of gait input
+motorType = input("Type 1 if Analog Servo, 2 if Digital Servo: ")
 type = input("Type 1 for Random Gait, 2 for Standing Gait, 3 for Manual Gait: ")
 if(type == 1):
-	gaitGenerator = './splineGen.py'
+	gaitGenerator = './splineGen_savedGait.py'
 elif(type == 2):
-	gaitGenerator = './standingGait.py'
+	gaitGenerator = '../standingGait.py'
 elif(type == 3):
-	gaitGenerator = './manualGait.py'
+	gaitGenerator = '../manualGait.py'
 	f = open('manual.txt', 'w')
 	fem_num = input("Enter how many femur coordinates you want: ")
 	for i in range(int(fem_num)):
@@ -202,34 +315,30 @@ elif(type == 3):
 		f.write(' ')
 	f.write('\n')
 	f.close()	
-
-#Pulls motor extrema from json file
 pullMotorVal(motorType)
-
-gait = obtainGait()
+gait= obtainGait()
 gaitSave = gait
-
-#Parses gait to pure numerical array
 gait = gait.replace("]","")
 gait = gait.replace("\n","")
 gaitArray = gait.split('[')
 chassis = np.fromstring(gaitArray[1],dtype=float,sep=" ")
 tibia = np.fromstring(gaitArray[2],dtype=float,sep=" ")
-
-#Queries user for input phase
 phase = input('Enter phase between legs (in degrees): ')
-
-#Robot Movement Command Sequence. Also evaluates time of execution of gait
 spyndraStand()
-starttime = time.time()
-splineRunner(chassis, tibia, phase, type)
-endtime = time.time()
-elapsedtime = endtime - starttime
+
+flat_matrix = flatIMUdata(bno)
+
+startTime = time.time()
+
+splineRunner(chassis, tibia, phase, type,bno,flat_matrix)
+
+endTime=time.time()
+elapsedtime = endTime-startTime
+print("The elapsed time is " + str(elapsedtime))
+
+IMU_output.close()
+
 spyndraSit()
-
-print("Duration of gait is " + str(elapsedtime) + " seconds.\n")
-
-#Saving a gait sequence from random gait generator
 save = 0
 if(type == 1):
 	save = input("Would you like to save that run? (1 if yes, 0 if no): ")

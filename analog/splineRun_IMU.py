@@ -66,6 +66,10 @@ def splineRunner(chassis, tibia, phase, type, bno, flatMatrix):
 	
 	tick = datetime.now()
 	
+	#this determines the number of times the IMU reads data
+	IMU_cycleThreshold = 5
+	IMU_cycleCounter = 1
+	
 	leg1_counter = ((4.0*phase)/360.0)*len(chassis)
 	leg2_counter = ((3.0*phase)/360.0)*len(chassis)
 	leg3_counter = ((2.0*phase)/360.0)*len(chassis)
@@ -88,6 +92,12 @@ def splineRunner(chassis, tibia, phase, type, bno, flatMatrix):
 				leg3_counter -= len(chassis)
 			if leg4_counter >= len(chassis):
 				leg4_counter -= len(chassis)
+
+			#determines whether the IMU will read in the current cycle
+			if IMU_cycleCounter == IMU_cycleThreshold:
+				IMU_cycleCounter = 1
+			else:
+				IMU_cycleCounter+= 1
 			
 			#run for percentages
 			if type == 1:
@@ -109,13 +119,14 @@ def splineRunner(chassis, tibia, phase, type, bno, flatMatrix):
 				outputMotor(chassisOutput4, tibiaOutput4, 6, 7)
 			
 				#read data from IMU
-				currentTimeD = tick - datetime.now()
-				currentReading = produceVector(bno)
-				currentEditedReading = currentReading - flatMatrix
+				if IMU_cycleCounter == IMU_cycleThreshold:
+					currentTimeD = tick - datetime.now()
+					currentReading, errorCounter = produceVector(bno)
+					currentEditedReading = currentReading - flatMatrix
 
-				IMU_output.write(str(currentTimeD.total_seconds()) + " ")
-				IMU_output.write(str(currentReading[0])+ ' ' + str(currentReading[1]))
-				IMU_output.write('\n')
+					IMU_output.write(str(currentTimeD.total_seconds()) + " ")
+					IMU_output.write(str(currentReading[0])+ ' ' + str(currentReading[1]))
+					IMU_output.write('\n')
 			
 
 			#run for motor angles
@@ -138,16 +149,16 @@ def splineRunner(chassis, tibia, phase, type, bno, flatMatrix):
 				outputMotor(chassisOutput4, tibiaOutput4, 6, 7)
 
                                 #read data from IMU
+                                if IMU_cycleCounter == IMU_cycleThreshold:
+                                        currentTimeD = tick - datetime.now()
+                                        currentReading, errorCounter = produceVector(bno)
+                                        currentEditedReading = currentReading - flatMatrix
 
-				currentTimeD = datetime.now() - tick
-				currentReading = produceVector(bno)
-				currentEditedReading = currentReading - flatMatrix
+                                        IMU_output.write(str(currentTimeD.total_seconds()) + " ")
+                                        IMU_output.write(str(currentReading[0])+ ' ' + str(currentReading[1]))
+                                        IMU_output.write('\n')
 
-				IMU_output.write(str(currentTimeD.total_seconds()) + " ")
-				IMU_output.write(str(currentReading[0])+ ' ' + str(currentReading[1]))
-				IMU_output.write('\n')
-
-
+				
 			leg1_counter+=1
 			leg2_counter+=1
 			leg3_counter+=1
@@ -230,14 +241,14 @@ def flatIMUdata(bno):
 	#we compute the IMU flat Data nDataPoints times and return the 
 	#median of these. This is done to refer small jump errors
 	while flatCounter < nDataPoints:
-		currentVectors = produceVector(bno)
+		currentVectors, errorCounter = produceVector(bno)
 		IMU_tempFlatData[flatCounter,0:2,0:3] = currentVectors
 		flatCounter = flatCounter+1
 	
 	return numpy.median(IMU_tempFlatData,axis=0)
 
 #computes the current gyro and accelerometer readings from the IMU
-def produceVector(bno):
+def produceVector(bno, errorCounter = 0):
 
 	#we round the values to the thousandth place
 	rPlace = 1000
@@ -255,11 +266,12 @@ def produceVector(bno):
 
 	matrixData[0,0:3] = euler_rounded
 	matrixData[1,0:3] = grav_rounded
-
+	
+	#This error correction technique below has been shown to be wasteful.
 	#Euler angles should be from 0 to 360. I've been getting weird errors in which they
 	#jump to ~1000, so I just recompute in that case. 
-	if ((euler_rounded[0] > 360) or (euler_rounded[1]>360) or (euler_rounded[2]>360)):
-                return produceVector(bno)
+	#if ((euler_rounded[0] > 360) or (euler_rounded[1]>360) or (euler_rounded[2]>360)):
+        #        return produceVector(bno, errorCounter+1)
 
 	#An euler angle of 359 is only 2 degrees from an euler angle of 1 (they wrap around 360)
 	#to make the two values equivalent, I artificially make the euler angle return value
@@ -269,7 +281,7 @@ def produceVector(bno):
         if (euler_rounded[0]>180):
                 matrixData[0][0] = abs(euler_rounded[0]-360)
 
-        return matrixData
+        return matrixData, errorCounter
 
 
 #calls gaitGenerator file and receives arrays from pipeline
@@ -316,7 +328,13 @@ spyndraStand()
 
 flat_matrix = flatIMUdata(bno)
 
+startTime = time.time()
+
 splineRunner(chassis, tibia, phase, type,bno,flat_matrix)
+
+endTime=time.time()
+elapsedtime = endTime-startTime
+print("The elapsed time is " + str(elapsedtime))
 
 IMU_output.close()
 

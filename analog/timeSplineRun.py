@@ -43,30 +43,41 @@ def outputMotor(chassisOutput, tibiaOutput, chassisNum, tibiaNum):
 	pwm.set_pwm(tibiaNum, 0, int(tibiaOutput))
  
 #Outputs the splines according to a phase
-def splineRunner(chassis, tibia, phase, type):
-	leg1_counter = ((4.0*phase)/360.0)*len(chassis)
-	leg2_counter = ((3.0*phase)/360.0)*len(chassis)
-	leg3_counter = ((2.0*phase)/360.0)*len(chassis)
-	leg4_counter = ((1.0*phase)/360.0)*len(chassis)
+def splineRunner(chassis, tibia, time1, time2, time3, type):
+	#convert timings to phase
+	leg1_counter = 0
+	leg2_counter = int(time1*(1080/5))
+	leg3_counter = int(time2*(1080/5))
+	leg4_counter = int(time3*(1080/5))
 
-	#In the case of a phase greater than 180, leg1 and leg2 must be corrected back to 0 and 180 degrees
-	if(phase >= 180):
-		leg2_counter = ((1.0*phase)/360.0)*len(chassis)
-		leg1_counter = ((2.0*phase)/360.0)*len(chassis)
-		
+	#In the case of phases higher than a full cycle, re-evaluate
+	if(leg2_counter >= 720):
+		leg2_counter -= 720
+	if(leg3_counter >= 720):
+		leg3_counter -= 720
+	if(leg4_counter >= 720):
+		leg4_counter -= 720
+	
+	if(leg2_counter >= 360):
+		leg2_counter -= 360
+	if(leg3_counter >= 360):
+		leg3_counter -= 360
+	if(leg4_counter >= 360):
+		leg4_counter -= 360
+	
 	startFemur = 255
 	startTibia = 275 
 
 	for i in range(3):
 		for i in range(len(chassis)):
-			if leg1_counter >= len(chassis):
-				leg1_counter -= len(chassis)
-			if leg2_counter >= len(chassis):
-				leg2_counter -= len(chassis)
-			if leg3_counter >= len(chassis):
-				leg3_counter -= len(chassis)
-			if leg4_counter >= len(chassis):
-				leg4_counter -= len(chassis)
+			if leg1_counter >= 360:
+				leg1_counter -= 360
+			if leg2_counter >= 360:
+				leg2_counter -= 360
+			if leg3_counter >= 360:
+				leg3_counter -= 360
+			if leg4_counter >= 360:
+				leg4_counter -= 360
 			
 			#run for percentages
 			if type == 1:

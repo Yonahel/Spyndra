@@ -58,22 +58,20 @@ def checkVelocityArr(arr):
 	else:
         	return arr
 
-#Traditional Random Gait
-#random_femur = np.random.rand(5)
-#random_tibia = np.random.rand(5)
 	
 gaitFile = open('/home/pi/Desktop/SpyndraSpy/project/Spyndra_Control/Spyndra_newCode/analog/saved_gates/most_recent.txt','w')
 
 
-
-random_femur = np.array([0.6642565, 0.93031099, 0.98387567, 0.55137283, 0.25167978])
-gaitFile.write(str(random_femur) + '\n')
-
-random_tibia = np.array([0.22984195, 0.63087833, 0.65343093, 0.92651416, 0.54060193])
-gaitFile.write(str(random_tibia) + '\n')
-
+random_femur = np.random.rand(5)
+random_tibia = np.random.rand(5)
 
 random_femur = checkVelocityArr(random_femur)
 random_tibia = checkVelocityArr(random_tibia)
+
+gaitFile.write(str(random_femur) + '\n')
+gaitFile.write(str(random_tibia) + '\n')
+
 spline_gen(random_femur, random_tibia, 5, 2) #changed 2 to 10 cycles
+
+
 
