@@ -7,12 +7,6 @@ from subprocess import Popen, PIPE
 
 pwm = Adafruit_PCA9685.PCA9685()
 
-tibia_min = 200
-tibia_max = 500
-chassis_min = 200
-chassis_max = 500
-
-
 #the file path for the gait generator file. Uncomment the one you want to use
 #gaitGenerator = './splineGen.py'
 #gaitGenerator = './standingGait.py'
@@ -20,15 +14,44 @@ chassis_max = 500
 
 pwm.set_pwm_freq(60)	#Sets frequency to 60 Hz
 
+motor0_min = 250
+motor0_max = 300
+motor1_min = 250
+motor1_max = 300
+motor2_min = 250
+motor2_max = 300
+motor3_min = 250
+motor3_max = 300
+motor4_min = 250
+motor4_max = 300
+motor5_min = 250
+motor5_max = 300
+motor6_min = 250
+motor6_max = 300
+motor7_min = 250
+motor7_max = 300
+
 #Pulls Min and Max values for femurs and tibias from the json file
 def pullMotorVal(motorType):
 	if(motorType == 1):
 		json_data = open('../servo_settings.json').read()
 		parsed_json = json.loads(json_data)
-		tibia_min = parsed_json['analog tibia min']
-		tibia_max = parsed_json['analog tibia max']
-		chassis_min = parsed_json['analog chassis min']
-		chassis_max = parsed_json['analog chassis max']
+		motor9_min = parsed_json['motor 0 min']
+		motor0_max = parsed_json['motor 0 max']
+		motor1_min = parsed_json['motor 1 min']
+		motor1_max = parsed_json['motor 1 max']
+		motor2_min = parsed_json['motor 2 min']
+		motor2_min = parsed_json['motor 2 max']
+		motor3_min = parsed_json['motor 3 min']
+		motor3_max = parsed_json['motor 3 max']
+		motor4_min = parsed_json['motor 4 min']
+		motor4_max = parsed_json['motor 4 max']
+		motor5_min = parsed_json['motor 5 min']
+		motor5_max = parsed_json['motor 5 max']
+		motor6_min = parsed_json['motor 6 min']
+		motor6_max = parsed_json['motor 6 max']
+		motor7_min = parsed_json['motor 7 min']
+		motor7_max = parsed_json['motor 7 max']
 	elif(motorType == 2):
 		json_data = open('./servo_settings.json').read()
 		parsed_json = json.loads(json_data)
@@ -57,7 +80,7 @@ def splineRunner(chassis, tibia, phase, type):
 	startFemur = 255
 	startTibia = 275 
 
-	for i in range(3):
+	for i in range(50):
 		for i in range(len(chassis)):
 			if leg1_counter >= len(chassis):
 				leg1_counter -= len(chassis)
@@ -70,17 +93,17 @@ def splineRunner(chassis, tibia, phase, type):
 			
 			#run for percentages
 			if type == 1:
-				chassisOutput1 = chassis[leg1_counter]*(chassis_max-chassis_min) + chassis_min
-				tibiaOutput1 = tibia[leg1_counter]*(tibia_max-tibia_min)+tibia_min
+				chassisOutput1 = chassis[leg1_counter]*(motor0_max-motor0_min) + motor0_min
+				tibiaOutput1 = tibia[leg1_counter]*(motor1_max-motor1_min)+motor1_min
 				
-				chassisOutput2 = chassis[leg2_counter]*(chassis_max-chassis_min) + chassis_min
-				tibiaOutput2 = tibia[leg2_counter]*(tibia_max-tibia_min)+tibia_min
+				chassisOutput2 = chassis[leg2_counter]*(motor2_max-motor2_min) + motor2_min
+				tibiaOutput2 = tibia[leg2_counter]*(motor3_max-motor3_min)+motor3_min
 	
-				chassisOutput3 = chassis[leg3_counter]*(chassis_max-chassis_min) + chassis_min
-				tibiaOutput3 = tibia[leg3_counter]*(tibia_max-tibia_min)+tibia_min
+				chassisOutput3 = chassis[leg3_counter]*(motor4_max-motor4_min) + motor4_min
+				tibiaOutput3 = tibia[leg3_counter]*(motor5_max-motor5_min)+motor5_min
 	
-				chassisOutput4 = chassis[leg4_counter]*(chassis_max-chassis_min) + chassis_min
-				tibiaOutput4 = tibia[leg4_counter]*(tibia_max-tibia_min)+tibia_min	
+				chassisOutput4 = chassis[leg4_counter]*(motor6_max-motor6_min) + motor6_min
+				tibiaOutput4 = tibia[leg4_counter]*(motor7_max-motor7_min)+motor7_min	
 
 				outputMotor(chassisOutput1, tibiaOutput1, 0, 1)
 				outputMotor(chassisOutput2, tibiaOutput2, 2, 3)					

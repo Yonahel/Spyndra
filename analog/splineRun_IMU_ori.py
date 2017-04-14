@@ -8,11 +8,14 @@ from subprocess import Popen, PIPE
 	
 pwm = Adafruit_PCA9685.PCA9685()
 
+
+
 #Ori Adjusted these values
-tibia_min = 275
+tibia_min = 260
 tibia_max = 375
 chassis_min = 225
 chassis_max = 325
+
 
 #this variable will be used for saving the gyro and accelerometer values of a flat, unoving Spyndra
 IMU_flatMatrix = np.zeros(shape=(2,3))

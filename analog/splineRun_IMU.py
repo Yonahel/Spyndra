@@ -13,7 +13,7 @@ tibia_max = 500
 chassis_min = 200
 chassis_max = 500
 
-#this variable will be used for saving the gyro and accelerometer values of a flat, unoving Spyndra
+#this variable will be used for saving the gyro and accelerometer values of a flat, unmoving Spyndra
 IMU_flatMatrix = np.zeros(shape=(2,3))
 
 #we'll keep all IMU data in the next two matrices until it's time to write it out
@@ -65,7 +65,9 @@ def outputMotor(chassisOutput, tibiaOutput, chassisNum, tibiaNum):
 def splineRunner(chassis, tibia, phase, type, bno, flatMatrix):
 	
 	tick = datetime.now()
-	
+
+	IMU_output.write("The flat matrix is " + str(flatMatrix) + " \n")
+
 	#this determines the number of times the IMU reads data
 	IMU_cycleThreshold = 5
 	IMU_cycleCounter = 1
@@ -125,7 +127,8 @@ def splineRunner(chassis, tibia, phase, type, bno, flatMatrix):
 					currentEditedReading = currentReading - flatMatrix
 
 					IMU_output.write(str(currentTimeD.total_seconds()) + " ")
-					IMU_output.write(str(currentReading[0])+ ' ' + str(currentReading[1]))
+					#IMU_output.write(str(currentReading[0])+ ' ' + str(currentReading[1]))
+					IMU_output.write(str(currentEditedReading[0]) + ' ' + str(currentEditedReading[1]))
 					IMU_output.write('\n')
 			
 
@@ -155,8 +158,9 @@ def splineRunner(chassis, tibia, phase, type, bno, flatMatrix):
                                         currentEditedReading = currentReading - flatMatrix
 
                                         IMU_output.write(str(currentTimeD.total_seconds()) + " ")
-                                        IMU_output.write(str(currentReading[0])+ ' ' + str(currentReading[1]))
-                                        IMU_output.write('\n')
+                                        #IMU_output.write(str(currentReading[0])+ ' ' + str(currentReading[1]))
+                                        IMU_output.write(str(currentEditedReading[0])+ ' ' + str(currentEditedReading[1]))
+					IMU_output.write('\n')
 
 				
 			leg1_counter+=1

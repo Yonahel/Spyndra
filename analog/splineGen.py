@@ -66,6 +66,8 @@ gaitFile = open('/home/pi/Desktop/SpyndraSpy/project/Spyndra_Control/Spyndra_new
 
 
 
+
+#Test gait
 random_femur = np.array([0.6642565, 0.93031099, 0.98387567, 0.55137283, 0.25167978])
 gaitFile.write(str(random_femur) + '\n')
 
