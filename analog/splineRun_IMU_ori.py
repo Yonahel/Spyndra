@@ -124,12 +124,20 @@ def splineRunner(chassis, tibia, phase, type, bno, flatMatrix):
 			
 				#read data from IMU
 				if IMU_cycleCounter == IMU_cycleThreshold:
-					currentTimeD = tick - datetime.now()
+					currentTimeD =  datetime.now() - tick
 					currentReading, errorCounter = produceVector(bno)
 					currentEditedReading = currentReading - flatMatrix
 
 					IMU_output.write(str(currentTimeD.total_seconds()) + " ")
-					IMU_output.write(str(currentReading[0])+ ' ' + str(currentReading[1]))
+					IMU_output.write(str(currentReading[0])+ ' ' + str(currentReading[1]) + " ")
+					
+					#the below line also outputs tibia and femur positions
+					IMU_output.write(str(chassisOutput1) + " " + str(tibiaOutput1) + " ")
+					IMU_output.write(str(chassisOutput2) + " " + str(tibiaOutput2) + " ")
+					IMU_output.write(str(chassisOutput3) + " " + str(tibiaOutput3) + " ")
+					IMU_output.write(str(chassisOutput4) + " " + str(tibiaOutput4) + " ")
+
+
 					IMU_output.write('\n')
 			
 
@@ -154,13 +162,20 @@ def splineRunner(chassis, tibia, phase, type, bno, flatMatrix):
 
                                 #read data from IMU
                                 if IMU_cycleCounter == IMU_cycleThreshold:
-                                        currentTimeD = tick - datetime.now()
-                                        currentReading, errorCounter = produceVector(bno)
-                                        currentEditedReading = currentReading - flatMatrix
+					currentTimeD = datetime.now() - tick
+					currentReading, errorCounter = produceVector(bno)
+					currentEditedReading = currentReading - flatMatrix
 
-                                        IMU_output.write(str(currentTimeD.total_seconds()) + " ")
-                                        IMU_output.write(str(currentReading[0])+ ' ' + str(currentReading[1]))
-                                        IMU_output.write('\n')
+					IMU_output.write(str(currentTimeD.total_seconds()) + " ")
+					IMU_output.write(str(currentReading[0])+ ' ' + str(currentReading[1]))
+
+                                        #the below line also outputs tibia and femur positions
+					IMU_output.write(str(chassisOutput1) + " " + str(tibiaOutput1) + " ")
+					IMU_output.write(str(chassisOutput2) + " " + str(tibiaOutput2) + " ")
+					IMU_output.write(str(chassisOutput3) + " " + str(tibiaOutput3) + " ")
+					IMU_output.write(str(chassisOutput4) + " " + str(tibiaOutput4) + " ")
+
+					IMU_output.write('\n')
 
 				
 			leg1_counter+=1
@@ -319,7 +334,7 @@ elif(type == 3):
 		f.write(' ')
 	f.write('\n')
 	f.close()	
-pullMotorVal(motorType)
+#pullMotorVal(motorType)
 gait= obtainGait()
 gaitSave = gait
 gait = gait.replace("]","")
