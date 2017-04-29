@@ -1,4 +1,4 @@
-
+import json
 import math
 import numpy as np
 import matplotlib.pyplot as plt
@@ -51,7 +51,7 @@ def spline_gen(points_femur, points_tibia, period, cycles):
         
 
 def checkVelocityArr(arr):
-        if (abs(arr[4] - arr[3]) > 0.5) or (abs(arr[3] - arr[2]) > 0.5) or (abs(arr[2]-arr[1]) > 0.5) or (abs(arr[1] - arr[0]) > 0.5) or (abs(arr[0] - arr[4]) > 0.5):
+        if (abs(arr[4] - arr[3]) > 0.7) or (abs(arr[3] - arr[2]) > 0.7) or (abs(arr[2]-arr[1]) > 0.7) or (abs(arr[1] - arr[0]) > 0.7) or (abs(arr[0] - arr[4]) > 0.7):
                 arr = np.random.rand(5)
                 arr = checkVelocityArr(arr)
                 return arr	
@@ -59,8 +59,12 @@ def checkVelocityArr(arr):
         	return arr
 
 #Traditional Random Gait
-#random_femur = np.random.rand(5)
-#random_tibia = np.random.rand(5)
+random_femur = np.random.rand(5)
+random_tibia = np.random.rand(5)
+#random_femur = np.array([0.6642565, 0.93031099, 0.98387567, 0.55137283, 0.25167978])
+#random_tibia = np.array([0.22984195, 0.63087833, 0.65343093, 0.92651416, 0.54060193])
+
+
 	
 gaitFile = open('/home/pi/Desktop/SpyndraSpy/project/Spyndra_Control/Spyndra_newCode/analog/saved_gates/most_recent.txt','w')
 
@@ -68,14 +72,20 @@ gaitFile = open('/home/pi/Desktop/SpyndraSpy/project/Spyndra_Control/Spyndra_new
 
 
 #Test gait
-random_femur = np.array([0.6642565, 0.93031099, 0.98387567, 0.55137283, 0.25167978])
 gaitFile.write(str(random_femur) + '\n')
-
-random_tibia = np.array([0.22984195, 0.63087833, 0.65343093, 0.92651416, 0.54060193])
 gaitFile.write(str(random_tibia) + '\n')
 
 
 random_femur = checkVelocityArr(random_femur)
 random_tibia = checkVelocityArr(random_tibia)
+
+a = random_femur.tolist()
+b = random_tibia.tolist()
+
+file = open('temp.json', 'w');
+key = {"Femur Sequence": a,
+       "Tibia Sequence": b}
+json.dump(key, file, sort_keys = True, indent = 4)
+file.close()
 spline_gen(random_femur, random_tibia, 5, 2) #changed 2 to 10 cycles
 

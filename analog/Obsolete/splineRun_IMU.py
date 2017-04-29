@@ -8,16 +8,12 @@ from subprocess import Popen, PIPE
 	
 pwm = Adafruit_PCA9685.PCA9685()
 
+tibia_min = 200
+tibia_max = 500
+chassis_min = 200
+chassis_max = 500
 
-
-#Ori Adjusted these values
-tibia_min = 260
-tibia_max = 375
-chassis_min = 225
-chassis_max = 325
-
-
-#this variable will be used for saving the gyro and accelerometer values of a flat, unoving Spyndra
+#this variable will be used for saving the gyro and accelerometer values of a flat, unmoving Spyndra
 IMU_flatMatrix = np.zeros(shape=(2,3))
 
 #we'll keep all IMU data in the next two matrices until it's time to write it out
@@ -69,7 +65,9 @@ def outputMotor(chassisOutput, tibiaOutput, chassisNum, tibiaNum):
 def splineRunner(chassis, tibia, phase, type, bno, flatMatrix):
 	
 	tick = datetime.now()
-	
+
+	IMU_output.write("The flat matrix is " + str(flatMatrix) + " \n")
+
 	#this determines the number of times the IMU reads data
 	IMU_cycleThreshold = 5
 	IMU_cycleCounter = 1
@@ -124,20 +122,13 @@ def splineRunner(chassis, tibia, phase, type, bno, flatMatrix):
 			
 				#read data from IMU
 				if IMU_cycleCounter == IMU_cycleThreshold:
-					currentTimeD =  datetime.now() - tick
+					currentTimeD = tick - datetime.now()
 					currentReading, errorCounter = produceVector(bno)
 					currentEditedReading = currentReading - flatMatrix
 
 					IMU_output.write(str(currentTimeD.total_seconds()) + " ")
-					IMU_output.write(str(currentReading[0])+ ' ' + str(currentReading[1]) + " ")
-					
-					#the below line also outputs tibia and femur positions
-					IMU_output.write(str(chassisOutput1) + " " + str(tibiaOutput1) + " ")
-					IMU_output.write(str(chassisOutput2) + " " + str(tibiaOutput2) + " ")
-					IMU_output.write(str(chassisOutput3) + " " + str(tibiaOutput3) + " ")
-					IMU_output.write(str(chassisOutput4) + " " + str(tibiaOutput4) + " ")
-
-
+					#IMU_output.write(str(currentReading[0])+ ' ' + str(currentReading[1]))
+					IMU_output.write(str(currentEditedReading[0]) + ' ' + str(currentEditedReading[1]))
 					IMU_output.write('\n')
 			
 
@@ -162,19 +153,13 @@ def splineRunner(chassis, tibia, phase, type, bno, flatMatrix):
 
                                 #read data from IMU
                                 if IMU_cycleCounter == IMU_cycleThreshold:
-					currentTimeD = datetime.now() - tick
-					currentReading, errorCounter = produceVector(bno)
-					currentEditedReading = currentReading - flatMatrix
+                                        currentTimeD = tick - datetime.now()
+                                        currentReading, errorCounter = produceVector(bno)
+                                        currentEditedReading = currentReading - flatMatrix
 
-					IMU_output.write(str(currentTimeD.total_seconds()) + " ")
-					IMU_output.write(str(currentReading[0])+ ' ' + str(currentReading[1]))
-
-                                        #the below line also outputs tibia and femur positions
-					IMU_output.write(str(chassisOutput1) + " " + str(tibiaOutput1) + " ")
-					IMU_output.write(str(chassisOutput2) + " " + str(tibiaOutput2) + " ")
-					IMU_output.write(str(chassisOutput3) + " " + str(tibiaOutput3) + " ")
-					IMU_output.write(str(chassisOutput4) + " " + str(tibiaOutput4) + " ")
-
+                                        IMU_output.write(str(currentTimeD.total_seconds()) + " ")
+                                        #IMU_output.write(str(currentReading[0])+ ' ' + str(currentReading[1]))
+                                        IMU_output.write(str(currentEditedReading[0])+ ' ' + str(currentEditedReading[1]))
 					IMU_output.write('\n')
 
 				
@@ -334,7 +319,7 @@ elif(type == 3):
 		f.write(' ')
 	f.write('\n')
 	f.close()	
-#pullMotorVal(motorType)
+pullMotorVal(motorType)
 gait= obtainGait()
 gaitSave = gait
 gait = gait.replace("]","")
@@ -343,9 +328,11 @@ gaitArray = gait.split('[')
 chassis = np.fromstring(gaitArray[1],dtype=float,sep=" ")
 tibia = np.fromstring(gaitArray[2],dtype=float,sep=" ")
 phase = input('Enter phase between legs (in degrees): ')
-spyndraStand()
+
 
 flat_matrix = flatIMUdata(bno)
+
+spyndraStand()
 
 startTime = time.time()
 

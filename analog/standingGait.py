@@ -8,6 +8,35 @@ from scipy.interpolate import interp1d
 #All femurs 400 except 4 which is 370
 #All tibia 450
 
+#Pulls Min and Max values for femurs and tibias from the json file
+def pullMotorVal(motorType):
+	if(motorType == 1):
+		json_data = open('../servo_settings.json').read()
+		parsed_json = json.loads(json_data)
+		motor9_min = parsed_json['motor 0 min']
+		motor0_max = parsed_json['motor 0 max']
+		motor1_min = parsed_json['motor 1 min']
+		motor1_max = parsed_json['motor 1 max']
+		motor2_min = parsed_json['motor 2 min']
+		motor2_min = parsed_json['motor 2 max']
+		motor3_min = parsed_json['motor 3 min']
+		motor3_max = parsed_json['motor 3 max']
+		motor4_min = parsed_json['motor 4 min']
+		motor4_max = parsed_json['motor 4 max']
+		motor5_min = parsed_json['motor 5 min']
+		motor5_max = parsed_json['motor 5 max']
+		motor6_min = parsed_json['motor 6 min']
+		motor6_max = parsed_json['motor 6 max']
+		motor7_min = parsed_json['motor 7 min']
+		motor7_max = parsed_json['motor 7 max']
+	elif(motorType == 2):
+		json_data = open('./servo_settings.json').read()
+		parsed_json = json.loads(json_data)
+		tibia_min = parsed_json['digital tibia min']
+		tibia_max = parsed_json['digital tibia max']
+		chassis_min = parsed_json['digital chassis min']
+		chassis_max = parsed_json['digital chassis max']
+
 def spline_gen(points_femur, points_tibia, period, cycles):
 
         freq=60
@@ -50,7 +79,7 @@ def spline_gen(points_femur, points_tibia, period, cycles):
 	print(f_femur_sample)
 	print(f_tibia_sample)	
 
-standing_femur = [255, 275, 255, 235]
-standing_tibia = [275, 295, 275, 255]
+standing_femur = [0.30, 0.50, 0.30, 0.10]
+standing_tibia = [0.20, 0.40, 0.20, 0.00]
 spline_gen(standing_femur, standing_tibia, 5, 2)
 
