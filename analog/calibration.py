@@ -3,96 +3,41 @@ import numpy as np
 import time
 import Adafruit_PCA9685
 import math
-import smbus
-import struct
 from BNO055 import *
 from subprocess import Popen, PIPE
-
 import json
-json_filename = "../servo_settings.json"
+
 
 
 pwn = Adafruit_PCA9685.PCA9685()
 
+#observed minimums to begin calibration 
 tibia_min = 260 #325 according to json file 
 tibia_max = 375 #425
 chassis_min = 225 #275
 chassis_max = 425 #475
 
 saved_pwms = []
-
-
-
-
-
-#the file path for the gait generator file. Uncomment the one you want to use
-#gaitGenerator = './splinegen.py'
-#gaitGenerator = './Spyndra_newCode/standinggait.py'
-gaitGenerator = './standingGait.py'
-
 pwn.set_pwm_freq(60)	#Sets frequency to 60 Hz
 
-#Pulls Min and Max values for femurs and tibias from the json file
-def pullMotorVal():
-	json_data = open('/home/pi/Desktop/SpyndraSpy/project/Spyndra_Control/Spyndra_newCode/servo_settings.json').read()
-	parsed_json = json.loads(json_data)
-	tibia_min = parsed_json['analog tibia min']
-	tibia_max = parsed_json['analog tibia max']
-	chassis_min = parsed_json['analog chassis min']
-	chassis_max = parsed_json['analog chassis max']
 
-#Outputs the motor signals to the motors from the splinegen arrays
-#def outputMotor(chassisOutput, tibiaOutput, chassisNum, tibiaNum):
-def outputMotor(chassisOutput, tibiaOutput, chassisNum, tibiaNum):
+#Outputs the motor signals to the motors 
+def outputMotor(chassisOutput, tibiaOutput, chassisNum, tibiaNum)
 	pwn.set_pwm(chassisNum, 0, int(chassisOutput))
 	pwn.set_pwm(tibiaNum, 0, int(tibiaOutput))
- 
-#Outputs the splines according to a phase
-def splineRunner(chassis, tibia, phase, type, bno):
-
-    
-	for chassisCounter in range(1):
-            for angleCounter in range(450,300,-1):
-		    chassisOutput = angleCounter
-		    #tibiaOutput = tibia[leg1_counter]*(tibia_max-tibia_min)+tibia_min
-		    outputMotor(chassisOutput, tibiaOutput, 0, 1)
-		    currentMatrix = produceVector(bno)
-			
-                    time.sleep(0.01)			
-
-#calls gaitGenerator file and receives arrays from pipeline
-def obtainGait():
-	process = Popen(['python',gaitGenerator], stdout=PIPE, stderr=PIPE)
-	stdout, stderr = process.communicate()
-	return stdout
-
+ 		
+#starts IMU data collection
 def startIMUdata():
         process = Popen(['python',IMUGenerator], stdout=PIPE, stderr=PIPE)
         return process
 
-#make spyndra stand up before running
-def spyndraStand(bno):
-	startFemur = chassis_min
-	startTibia = tibia_max
-	#motor4Femur = 370;
-	outputMotor(startFemur, startTibia, 0, 1)
-	outputMotor(startFemur, startTibia, 2, 3)	
-	outputMotor(startFemur, startTibia, 4, 5)
-	outputMotor(startFemur, startTibia, 6, 7)
-	while startTibia < tibia_max:
-		startTibia += 1
-		outputMotor(startFemur, startTibia, 0, 1)
-		outputMotor(startFemur, startTibia, 2, 3)
-		outputMotor(startFemur, startTibia, 4, 5)
-		outputMotor(startFemur, startTibia, 6, 7)
-		time.sleep(0.01)
-		produceVector(bno)
-
+#produces the flat IMU vector
 def flatIMUdata(bno):
         flatCounter = 0
         nDataPoints = 10
         matrixData = np.zeros(shape=(nDataPoints,2,3))
         
+        #collects matrix of 10 data points for stability 
         while flatCounter <nDataPoints:
                 currentVectors = produceVector(bno)
                 matrixData[flatCounter,0:2,0:3] = currentVectors
@@ -100,174 +45,101 @@ def flatIMUdata(bno):
                 
         return numpy.median(matrixData,axis=0)
 
-def calibrateTibia_old(bno):
-	startFemur = 440
-	startTibia = 225
-	#motor4Femur = 370;
 
-        time.sleep(3)
-        outputMotor(startFemur, startTibia, 0, 1)
-	outputMotor(startFemur, startTibia, 2, 3)	
-	outputMotor(startFemur, startTibia, 4, 5)
-	outputMotor(startFemur, startTibia, 6, 7)
-	time.sleep(3)
-
-        zod_matrix = flatIMUdata(bno)
-        zod_gyro = zod_matrix[0]
-        zod_accel = zod_matrix[1]
-        print(zod_gyro) #the first vector value is perpendicular to table
-        print('\n')
-        print(zod_accel)
-        flat_gyro =zod_gyro
-
-        maxChange= .1
-
-        flat_gyro = zod_gyro
-
-        tibiaCalibrated = np.zeros(shape=(4,1))
-        nTibia = 4 #we have 4 tibias
-        tibiaCalValue = -1 #if any calibrated value is returned as -1, we've hit an error
-
-        for iTibia in range(0,nTibia):
-                tibiaIncrementer = startTibia
-                while tibiaIncrementer < tibia_max:
-                        tibiaIncrementer += 1
-                        outputMotor(startFemur, tibiaIncrementer, iTibia*2, iTibia*2+1)
-                	time.sleep(0.01)
-                        currentV = produceVector(bno)
-                        diff = flat_gyro - currentV[0]
-                        #print diff
-                        #print ("\n")
-                        #print(np.linalg.norm(diff))
-                        if (np.linalg.norm(diff) > .05):
-                                diff2 = flat_gyro-(produceVector(bno)[0])
-                                #print("gate alpha")
-                                if (np.linalg.norm(diff2)>.05):
-                                        diff3 = flat_gyro-(produceVector(bno)[0])
-                                        #print("gate beta")
-                                        if (np.linalg.norm(diff3)>.05):
-                                                tibiaCalValue = tibiaIncrementer
-                                                #print("gate Delta")
-                                                tibiaIncrementer = 1000 #escape the while loop
-                                                print(np.linalg.norm(diff))
-                                                print("calibrated!")
-
-                tibiaCalibrated[iTibia] = tibiaCalValue
-                outputMotor(startFemur, startTibia, 0, 1)
-        	outputMotor(startFemur, startTibia, 2, 3)	
-        	outputMotor(startFemur, startTibia, 4, 5)
-        	outputMotor(startFemur, startTibia, 6, 7)
-        	time.sleep(3)
-
-        	zod_matrix = flatIMUdata(bno)
-                zod_gyro = zod_matrix[0]
-                zod_accel = zod_matrix[1]
-                print(zod_gyro) #the first vector value is perpendicular to table
-                print('\n')
-                print(zod_accel)
-                flat_gyro =zod_gyro
-                time.sleep(3)
-                
-        print(tibiaCalibrated)
-        
-        for j in range(0,4):
-                currentValue = tibiaCalibrated[j]
-                currentCenter = currentValue - 38 #observationally based
-                currentMax = currentCenter+70 #based off diagram from paper
-                currentMin = currentCenter - 30 #based off diagram from paper
-
-
+#calibrate all four tibias 
 def calibrateTibia(bno,femur_center):
+
+    #beginning motor outputs
 	startFemur = chassis_min
-	startTibia = tibia_max +150
+	startTibia = tibia_max +150 #offset 
 
 	
-	#motor4Femur = 370;
-
-        time.sleep(3)
-        outputMotor(femur_center[0], startTibia, 0, 1)
+    time.sleep(3)
+    outputMotor(femur_center[0], startTibia, 0, 1)
 	outputMotor(femur_center[1], startTibia, 2, 3)	
 	outputMotor(femur_center[2], startTibia, 4, 5)
 	outputMotor(femur_center[3], startTibia, 6, 7)
 	time.sleep(3)
 
-        zod_matrix = flatIMUdata(bno)
-        zod_gyro = zod_matrix[0]
-        zod_accel = zod_matrix[1]
+
+    zod_matrix = flatIMUdata(bno)   #obtain flat IMU 
+    zod_gyro = zod_matrix[0]        #starting gyroscopic data
+    zod_accel = zod_matrix[1]       #starting acceleration data
 	print("Initial flat data (gyro and accel data):")
-        print(zod_gyro) #the first vector value is perpendicular to table
-        print('\n')
-        #print(zod_accel)
-        #only using roll and pitch
-        flat_gyro =zod_gyro[1:3]
+    print(zod_gyro)                 #the first vector value is perpendicular to table
+    print('\n')
+    #print(zod_accel)
 
-        maxChange= .1
+    #only using roll and pitch
+    flat_gyro =zod_gyro[1:3]
+
+    maxChange= .1
 
 
 
-        tibiaCalibrated = np.zeros(shape=(4,1))
-        nTibia = 4 #we have 4 tibias
-        tibiaCalValue = -1 #if any calibrated value is returned as -1, we've hit an error
-        previous_diff = 0
-        current_diff = 0
-        delta_threshold = .05
-        diff = 0
-        delta =0
-        change_threshold = 6
+    tibiaCalibrated = np.zeros(shape=(4,1))
+    nTibia = 4 #we have 4 tibias
+    tibiaCalValue = -1 #if any calibrated value is returned as -1, we've hit an error
+    previous_diff = 0
+    current_diff = 0
+    delta_threshold = .05
+    diff = 0
+    delta =0
+    change_threshold = 6
 
-        for iTibia in range(0,nTibia):
-                previous_diff = 0
-                current_diff = 0
-                change_counter = 0
-                
-                tibiaIncrementer = startTibia
-                while tibiaIncrementer > tibia_min:
-                        tibiaIncrementer = tibiaIncrementer-1
-                        outputMotor(femur_center[iTibia],tibiaIncrementer, iTibia*2, iTibia*2+1)
-                	next_pwm =0
+    for iTibia in range(0,nTibia):
+            previous_diff = 0
+            current_diff = 0
+            change_counter = 0
+            
+            tibiaIncrementer = startTibia
+            while tibiaIncrementer > tibia_min:
+                    tibiaIncrementer = tibiaIncrementer-1
+                    outputMotor(femur_center[iTibia],tibiaIncrementer, iTibia*2, iTibia*2+1)
+            	next_pwm =0
 
-                	while (change_counter < change_threshold) and (not next_pwm):
-                                time.sleep(0.01)
-                                currentV = produceVector(bno)
-                                print(currentV[0][1:3])
+            	while (change_counter < change_threshold) and (not next_pwm):
+                            time.sleep(0.01)
+                            currentV = produceVector(bno)
+                            print(currentV[0][1:3])
 
-                                previous_diff = current_diff
-                                #only using rolls and pitch
-                                current_diff = flat_gyro - currentV[0][1:3]
+                            previous_diff = current_diff
+                            #only using rolls and pitch
+                            current_diff = flat_gyro - currentV[0][1:3]
 
-                                if tibiaIncrementer == startTibia-1:
-                                        previous_diff = current_diff
-                                        print("we should only see this once per cycle")
+                            if tibiaIncrementer == startTibia-1:
+                                    previous_diff = current_diff
+                                    print("we should only see this once per cycle")
 
-                        
-                                delta = abs(current_diff-previous_diff)
-                                print delta
-                                #print ("\n")
-                                #print(str(np.linalg.norm(delta)))
-                                if (np.linalg.norm(delta) > delta_threshold):
-                                        change_counter = change_counter+1
-                                        #time.sleep(0.1)
-                                        print(str(change_counter) + " for the boys back home")
-                                else:
-                                        change_counter =0
-                                        next_pwm =1
-                                if change_counter == change_threshold:
-                                        next_pwm =1
-                                        change_counter =0
-                
-                                        tibiaCalValue = tibiaIncrementer
-                                        tibiaIncrementer = tibia_min
-                                        #print("gate Delta")
-                                        #femurIncrementer = chassis_max#escape the while loop
-                                        #print(np.linalg.norm(delta))
-                                        #print(delta)
-					#print(flat_gyro)
-					#print(currentVector3)
-                                        #print("calibrated!")
-						
+                    
+                            delta = abs(current_diff-previous_diff)
+                            print delta
+                            #print ("\n")
+                            #print(str(np.linalg.norm(delta)))
+                            if (np.linalg.norm(delta) > delta_threshold):
+                                    change_counter = change_counter+1
+                                    #time.sleep(0.1)
+                                    print(str(change_counter) + " for the boys back home")
+                            else:
+                                    change_counter =0
+                                    next_pwm =1
+                            if change_counter == change_threshold:
+                                    next_pwm =1
+                                    change_counter =0
+            
+                                    tibiaCalValue = tibiaIncrementer
+                                    tibiaIncrementer = tibia_min
+                                    #print("gate Delta")
+                                    #femurIncrementer = chassis_max#escape the while loop
+                                    #print(np.linalg.norm(delta))
+                                    #print(delta)
+				#print(flat_gyro)
+				#print(currentVector3)
+                                    #print("calibrated!")
+					
 
-                tibiaCalibrated[iTibia] = tibiaCalValue
-                outputMotor(femur_center[0], startTibia, 0, 1)
+            tibiaCalibrated[iTibia] = tibiaCalValue
+            outputMotor(femur_center[0], startTibia, 0, 1)
         	outputMotor(femur_center[1], startTibia, 2, 3)	
         	outputMotor(femur_center[2], startTibia, 4, 5)
         	outputMotor(femur_center[3], startTibia, 6, 7)
@@ -299,7 +171,8 @@ def calibrateTibia(bno,femur_center):
 
         return max_list,min_list
 
-                
+
+#calibrate each Femur                
 def calibrateFemur(bno):
 	startFemur = chassis_min
 	startTibia = tibia_max + 175
