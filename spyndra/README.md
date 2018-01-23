@@ -6,7 +6,10 @@ This project assumes using <a href="http://wiki.ros.org/indigo/Installation/Ubun
 
 1. Suppose you have not created your ROS workspace, you can create one by the command:
 ```
+$ source /opt/ros/lunar/setup.bash
 $ mkdir -p ~/catkin_ws/src
+$ cd ~/catkin_ws/
+$ catkin_make
 ```
 
 2. Go to the workspace and download the repository.
