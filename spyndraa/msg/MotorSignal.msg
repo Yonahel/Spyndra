@@ -1,0 +1,9 @@
+int32 motor_type
+float64 chassis_1 
+float64 chassis_2 
+float64 chassis_3
+float64 chassis_4
+float64 tibia_1
+float64 tibia_2
+float64 tibia_3
+float64 tibia_4
