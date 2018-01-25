@@ -89,13 +89,13 @@ class DeepQNetwork:
             # c_names(collections_names) are the collections to store variables
             c_names = ['target_net_params', tf.GraphKeys.GLOBAL_VARIABLES]
 
-            # first layer. collections is used later when assign to target net
+            # first layer (35x10). collections is used later when assign to target net 
             with tf.variable_scope('l1'):
                 w1 = tf.get_variable('w1', [self.n_features, n_l1], initializer=w_initializer, collections=c_names)
                 b1 = tf.get_variable('b1', [1, n_l1], initializer=b_initializer, collections=c_names)
                 l1 = tf.nn.relu(tf.matmul(self.s_, w1) + b1)
 
-            # second layer. collections is used later when assign to target net
+            # second layer(10x3). collections is used later when assign to target net
             with tf.variable_scope('l2'):
                 w2 = tf.get_variable('w2', [n_l1, self.n_actions], initializer=w_initializer, collections=c_names)
                 b2 = tf.get_variable('b2', [1, self.n_actions], initializer=b_initializer, collections=c_names)
@@ -147,8 +147,8 @@ class DeepQNetwork:
         q_next, q_eval = self.sess.run(
             [self.q_next, self.q_eval],
             feed_dict={
-                self.s_: batch_memory[:, -self.n_features:],  # fixed params
-                self.s : batch_memory[:, :self.n_features],  # newest params
+                self.s_: batch_memory[:, -self.n_features:],  # fixed params  (Exploit old NN)
+                self.s : batch_memory[:, :self.n_features],   # newest params (Explore new NN)
             })
 
         # change q_target w.r.t q_eval's action
@@ -157,12 +157,15 @@ class DeepQNetwork:
         eval_act_index = batch_memory[:, self.n_features].astype(int) # each 32 actions
         reward = batch_memory[:, self.n_features + 1]
         
+        # we backpropagate this error, q_target, w.r.t. the corresponding action to network
+        # leave other actions as error = 0 because we didn't use it.
+        # To be more specific, loss = (q_target - q_eval)^2 and that q_target = q_eval except the values at eval_act_index
         q_target[batch_index, eval_act_index] = reward + self.gamma * np.max(q_next, axis=1)
 
         # train eval network
         _, self.cost = self.sess.run([self._train_op, self.loss],
-                                     feed_dict={self.s: batch_memory[:, :self.n_features],
-                                                self.q_target: q_target})
+                                      feed_dict={self.s: batch_memory[:, :self.n_features],
+                                                 self.q_target: q_target})
         self.cost_his.append(self.cost)
 
         # increasing epsilon
