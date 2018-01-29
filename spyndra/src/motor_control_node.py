@@ -172,24 +172,24 @@ def spline_run(chassis, tibia, phase, motor_type, motor_minmax_values):
         #run for percentages
         if motor_type == 1 or motor_type == 2:
         
-            chassisOutput1 += [chassis[leg1_counter]*(motor0_max-motor0_min) + motor0_min]
-            tibiaOutput1 += [tibia[leg1_counter]*(motor1_max-motor1_min)+motor1_min]
+            chassisOutput1 += [chassis[int(leg1_counter)]*(motor0_max-motor0_min) + motor0_min]
+            tibiaOutput1 += [tibia[int(leg1_counter)]*(motor1_max-motor1_min)+motor1_min]
             
-            chassisOutput2 += [chassis[leg2_counter]*(motor2_max-motor2_min) + motor2_min]
-            tibiaOutput2 += [tibia[leg2_counter]*(motor3_max-motor3_min)+motor3_min]
+            chassisOutput2 += [chassis[int(leg2_counter)]*(motor2_max-motor2_min) + motor2_min]
+            tibiaOutput2 += [tibia[int(leg2_counter)]*(motor3_max-motor3_min)+motor3_min]
 
-            chassisOutput3 += [chassis[leg3_counter]*(motor4_max-motor4_min) + motor4_min]
-            tibiaOutput3 += [tibia[leg3_counter]*(motor5_max-motor5_min)+motor5_min]
+            chassisOutput3 += [chassis[int(leg3_counter)]*(motor4_max-motor4_min) + motor4_min]
+            tibiaOutput3 += [tibia[int(leg3_counter)]*(motor5_max-motor5_min)+motor5_min]
 
-            chassisOutput4 += [chassis[leg4_counter]*(motor6_max-motor6_min) + motor6_min]
-            tibiaOutput4 += [tibia[leg4_counter]*(motor7_max-motor7_min)+motor7_min]
+            chassisOutput4 += [chassis[int(leg4_counter)]*(motor6_max-motor6_min) + motor6_min]
+            tibiaOutput4 += [tibia[int(leg4_counter)]*(motor7_max-motor7_min)+motor7_min]
 
 
             #singal1 = motor_getsignal(1, chassisOutput1, tibiaOutput1, chassisOutput2, \
              #   tibiaOutput2, chassisOutput3, tibiaOutput3, chassisOutput4, tibiaOutput4)
     
         #run for motor angles
-        elif self.motor.motor_type == 3:
+        elif motor_type == 3:
             chassisOutput1 += [chassis[leg1_counter]]
             tibiaOutput1 += [tibia[leg1_counter]]
             
@@ -227,9 +227,9 @@ def callback(msg):
     for i in range(len(outputs)):
         motor_signal = MotorSignal()
         motor_signal.motor_type = motor_type
-        motor_signal.chassis_1, motor_signal.chassis_2, motor_signal.chassis_3, motor_signal.chassis_4, \
-        motor_signal.tibia_1,   motor_signal.tibia_2,   motor_signal.tibia_3,   motor_signal.tibia_4 \
-                             = outputs[i]
+        #motor_signal.chassis_1, motor_signal.chassis_2, motor_signal.chassis_3, motor_signal.chassis_4, \
+        #motor_signal.tibia_1,   motor_signal.tibia_2,   motor_signal.tibia_3,   motor_signal.tibia_4 \
+        motor_signal.signal = outputs[i]
         pub.publish(motor_signal)
         rospy.loginfo(i)
 
