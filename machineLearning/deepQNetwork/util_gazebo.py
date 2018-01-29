@@ -85,13 +85,16 @@ class SpyndraEnv(gazebo_env.GazeboEnv):
 	
 		s_ = s.copy()
 		motor_index = action & 3 
-		action = (action - motor_index * 3)
-	
+		# action = 0(decrease by MOTORSTEP), 1(maintain), 1(increase by MOTORSTEP)
+		action = (action - motor_index * 3) - 1
+		
 		# publish motor signal into Spyndra / gazebo
+		MOTORSTEP = 5
 		try:
 			motor_signal = MotorSignal()
 			motor_signal.motor_type = 1
-			motor_signal.signal[motor_index] = action
+			motor_signal.signal = s_[:8]
+			motor_signal.signal[motor_index] += action * MOTORSTEP
 			self.action_publisher(motor_signal)
 		except:
 			print ("cannot publish action")
@@ -140,5 +143,4 @@ class SpyndraEnv(gazebo_env.GazeboEnv):
 			done = False
 	
 		return s_, reward, done
-
-SpyndraEnv()	
+	
