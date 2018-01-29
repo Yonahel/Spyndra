@@ -23,15 +23,15 @@ def takeAction(action, s):
 	action = (action - motor_index * 3)
 	# remain the angle of the motor
 	if action == 0:  
-		s_[motor_index] = s_[motor_index]
+		s_[motor_index] = s_[motor_index] - 5
 		s_[24: 29] = np.hstack((action, s_[24:28]))
 	# increase the motor by 5 degree
 	elif action == 1: 
-		s_[motor_index] = s_[motor_index] + 5
+		s_[motor_index] = s_[motor_index]
 		s_[24: 29] = np.hstack((action, s_[24:28]))
 	# decrease the motor by 5 degree
 	elif action == 2:
-		s_[motor_index] = s_[motor_index] - 5
+		s_[motor_index] = s_[motor_index] + 5
 		s_[24: 29] = np.hstack((action, s_[24:28]))
 
 	# here we simply assume Spyndra want's to move in x direction
