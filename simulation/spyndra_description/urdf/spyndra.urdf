@@ -1,0 +1,378 @@
+<?xml version="1.0"?>
+<robot name="spyndra">
+  <gazebo>
+    <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
+      <robotNamespace>/spyndra</robotNamespace>
+    </plugin>
+  </gazebo>
+
+  <gazebo>
+    <plugin name="imu_plugin" filename="libgazebo_ros_imu.so">
+      <alwaysOn>true</alwaysOn>
+      <bodyName>base_link</bodyName>
+      <topicName>imu</topicName>
+      <serviceName>imu_service</serviceName>
+      <gaussianNoise>0.0</gaussianNoise>
+      <updateRate>20.0</updateRate>
+    </plugin>
+  </gazebo>
+
+  <link name="base_link">
+    <visual>
+      <geometry>
+        <mesh filename="package://spyndra_description/meshes/chassis.stl"/>
+      </geometry>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://spyndra_description/meshes/chassis_col.stl"/>
+      </geometry>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+    </collision>
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <mass value="0.5"/>
+      <inertia
+        ixx="0.023695" ixy="-0.000015" ixz="0.000084"
+        iyy="0.022543" iyz="0.000215"
+        izz="0.035806"/>
+    </inertial>
+  </link>
+
+  <link name="femur_1">
+    <visual>
+      <geometry>
+        <mesh filename="package://spyndra_description/meshes/femur.stl"/>
+      </geometry>
+      <origin rpy="0 -1.57075 0" xyz="0.5 0 0"/>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://spyndra_description/meshes/femur_col.stl"/>
+      </geometry>
+      <origin rpy="0 -1.57075 0" xyz="0.5 0 0"/>
+    </collision>
+    <inertial>
+      <origin rpy="0 -1.57075 0" xyz="0.5 0 0"/>
+      <mass value="0.1"/>
+      <inertia
+        ixx="0.020186" ixy="0.000000" ixz="0.000480"
+        iyy="0.011942" iyz="0.000002"
+        izz="0.010980"/>
+    </inertial>
+  </link>
+
+  <link name="femur_2">
+    <visual>
+      <geometry>
+        <mesh filename="package://spyndra_description/meshes/femur.stl"/>
+      </geometry>
+      <origin rpy="0 -1.57075 1.57075" xyz="0 0.5 0"/>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://spyndra_description/meshes/femur_col.stl"/>
+      </geometry>
+      <origin rpy="0 -1.57075 1.57075" xyz="0 0.5 0"/>
+    </collision>
+    <inertial>
+      <origin rpy="0 -1.57075 1.57075" xyz="0 0.5 0"/>
+      <mass value="0.1"/>
+      <inertia
+        ixx="0.020186" ixy="0.000000" ixz="0.000480"
+        iyy="0.011942" iyz="0.000002"
+        izz="0.010980"/>
+    </inertial>
+  </link>
+
+  <link name="femur_3">
+    <visual>
+      <geometry>
+        <mesh filename="package://spyndra_description/meshes/femur.stl"/>
+      </geometry>
+      <origin rpy="0 -1.57075 3.1415" xyz="-0.5 0 0"/>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://spyndra_description/meshes/femur_col.stl"/>
+      </geometry>
+      <origin rpy="0 -1.57075 3.1415" xyz="-0.5 0 0"/>
+    </collision>
+    <inertial>
+      <origin rpy="0 -1.57075 3.1415" xyz="-0.5 0 0"/>
+      <mass value="0.1"/>
+      <inertia
+        ixx="0.020186" ixy="0.000000" ixz="0.000480"
+        iyy="0.011942" iyz="0.000002"
+        izz="0.010980"/>
+    </inertial>
+  </link>
+
+  <link name="femur_4">
+    <visual>
+      <geometry>
+        <mesh filename="package://spyndra_description/meshes/femur.stl"/>
+      </geometry>
+      <origin rpy="0 -1.57075 -1.57075" xyz="0 -0.5 0"/>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://spyndra_description/meshes/femur_col.stl"/>
+      </geometry>
+      <origin rpy="0 -1.57075 -1.57075" xyz="0 -0.5 0"/>
+    </collision>
+    <inertial>
+      <origin rpy="0 -1.57075 -1.57075" xyz="0 -0.5 0"/>
+      <mass value="0.1"/>
+      <inertia
+        ixx="0.020186" ixy="0.000000" ixz="0.000480"
+        iyy="0.011942" iyz="0.000002"
+        izz="0.010980"/>
+    </inertial>
+  </link>
+
+  <link name="tibia_1">
+    <visual>
+      <geometry>
+        <mesh filename="package://spyndra_description/meshes/tibia.stl"/>
+      </geometry>
+      <origin rpy="1.57075 0 -1.57075" xyz="0.5 -0.05 0.1"/>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://spyndra_description/meshes/tibia_col.stl"/>
+      </geometry>
+      <origin rpy="1.57075 0 -1.57075" xyz="0.5 -0.05 0.1"/>
+    </collision>
+    <inertial>
+      <origin rpy="1.57075 0 -1.57075" xyz="0.5 -0.05 0.1"/>
+      <mass value="0.1"/>
+      <inertia
+        ixx="0.017079" ixy="0.000102" ixz="-0.000485"
+        iyy="0.015589" iyz="0.004667"
+        izz="0.003313"/>
+    </inertial>
+  </link>
+
+  <link name="tibia_2">
+    <visual>
+      <geometry>
+        <mesh filename="package://spyndra_description/meshes/tibia.stl"/>
+      </geometry>
+      <origin rpy="1.57075 0 0" xyz="0.05 0.5 0.1"/>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://spyndra_description/meshes/tibia_col.stl"/>
+      </geometry>
+      <origin rpy="1.57075 0 0" xyz="0.05 0.5 0.1"/>
+    </collision>
+    <inertial>
+      <origin rpy="1.57075 0 0" xyz="0.05 0.5 0.1"/>
+      <mass value="0.1"/>
+      <inertia
+        ixx="0.017079" ixy="0.000102" ixz="-0.000485"
+        iyy="0.015589" iyz="0.004667"
+        izz="0.003313"/>
+    </inertial>
+  </link>
+
+  <link name="tibia_3">
+    <visual>
+      <geometry>
+        <mesh filename="package://spyndra_description/meshes/tibia.stl"/>
+      </geometry>
+      <origin rpy="1.57075 0 1.57075" xyz="-0.5 0.05 0.1"/>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://spyndra_description/meshes/tibia_col.stl"/>
+      </geometry>
+      <origin rpy="1.57075 0 1.57075" xyz="-0.5 0.05 0.1"/>
+    </collision>
+    <inertial>
+      <origin rpy="1.57075 0 1.57075" xyz="-0.5 0.05 0.1"/>
+      <mass value="0.1"/>
+      <inertia
+        ixx="0.017079" ixy="0.000102" ixz="-0.000485"
+        iyy="0.015589" iyz="0.004667"
+        izz="0.003313"/>
+    </inertial>
+  </link>
+
+  <link name="tibia_4">
+    <visual>
+      <geometry>
+        <mesh filename="package://spyndra_description/meshes/tibia.stl"/>
+      </geometry>
+      <origin rpy="1.57075 0 3.1415" xyz="-0.05 -0.5 0.1"/>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://spyndra_description/meshes/tibia_col.stl"/>
+      </geometry>
+      <origin rpy="1.57075 0 3.1415" xyz="-0.05 -0.5 0.1"/>
+    </collision>
+    <inertial>
+      <origin rpy="1.57075 0 3.1415" xyz="-0.05 -0.5 0.1"/>
+      <mass value="0.1"/>
+      <inertia
+        ixx="0.017079" ixy="0.000102" ixz="-0.000485"
+        iyy="0.015589" iyz="0.004667"
+        izz="0.003313"/>
+    </inertial>
+  </link>
+
+  <joint name="base_to_femur_1" type="revolute">
+    <origin rpy="0 0 0" xyz="0.6 0 0.1"/>
+    <axis xyz="0 1 0"/>
+    <limit effort="50.0" lower="-2.0" upper="2.0" velocity="0.1"/>
+    <parent link="base_link"/>
+    <child link="femur_1"/>
+  </joint>
+
+  <joint name="base_to_femur_2" type="revolute">
+    <origin rpy="0 0 0" xyz="0 0.6 0.1"/>
+    <axis xyz="-1 0 0"/>
+    <limit effort="50.0" lower="-2.0" upper="2.0" velocity="0.1"/>
+    <parent link="base_link"/>
+    <child link="femur_2"/>
+  </joint>
+
+  <joint name="base_to_femur_3" type="revolute">
+    <origin rpy="0 0 0" xyz="-0.6 0 0.1"/>
+    <axis xyz="0 -1 0"/>
+    <limit effort="50.0" lower="-2.0" upper="2.0" velocity="0.1"/>
+    <parent link="base_link"/>
+    <child link="femur_3"/>
+  </joint>
+
+  <joint name="base_to_femur_4" type="revolute">
+    <origin rpy="0 0 0" xyz="0 -0.6 0.1"/>
+    <axis xyz="1 0 0"/>
+    <limit effort="50.0" lower="-2.0" upper="2.0" velocity="0.1"/>
+    <parent link="base_link"/>
+    <child link="femur_4"/>
+  </joint>
+
+  <joint name="femur_to_tibia_1" type="revolute">
+    <origin rpy="0 0 0" xyz="1.1 0 0"/>
+    <axis xyz="0 1 0"/>
+    <limit effort="50.0" lower="-2.0" upper="2.0" velocity="0.1"/>
+    <parent link="femur_1"/>
+    <child link="tibia_1"/>
+  </joint>
+
+  <joint name="femur_to_tibia_2" type="revolute">
+    <origin rpy="0 0 0" xyz="0 1.1 0"/>
+    <axis xyz="-1 0 0"/>
+    <limit effort="50.0" lower="-2.0" upper="2.0" velocity="0.1"/>
+    <parent link="femur_2"/>
+    <child link="tibia_2"/>
+  </joint>
+
+  <joint name="femur_to_tibia_3" type="revolute">
+    <origin rpy="0 0 0" xyz="-1.1 0 0"/>
+    <axis xyz="0 -1 0"/>
+    <limit effort="50.0" lower="-2.0" upper="2.0" velocity="0.1"/>
+    <parent link="femur_3"/>
+    <child link="tibia_3"/>
+  </joint>
+
+  <joint name="femur_to_tibia_4" type="revolute">
+    <origin rpy="0 0 0" xyz="0 -1.1 0"/>
+    <axis xyz="1 0 0"/>
+    <limit effort="50.0" lower="-2.0" upper="2.0" velocity="0.1"/>
+    <parent link="femur_4"/>
+    <child link="tibia_4"/>
+  </joint>
+
+  <transmission name="tran1">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="base_to_femur_1">
+      <hardwareInterface>EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor1">
+      <hardwareInterface>EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+
+  <transmission name="tran2">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="base_to_femur_2">
+      <hardwareInterface>EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor2">
+      <hardwareInterface>EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+
+  <transmission name="tran3">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="base_to_femur_3">
+      <hardwareInterface>EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor3">
+      <hardwareInterface>EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+
+  <transmission name="tran4">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="base_to_femur_4">
+      <hardwareInterface>EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor4">
+      <hardwareInterface>EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+
+  <transmission name="tran5">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="femur_to_tibia_1">
+      <hardwareInterface>EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor5">
+      <hardwareInterface>EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+
+  <transmission name="tran6">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="femur_to_tibia_2">
+      <hardwareInterface>EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor6">
+      <hardwareInterface>EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+
+  <transmission name="tra71">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="femur_to_tibia_3">
+      <hardwareInterface>EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor7">
+      <hardwareInterface>EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+
+  <transmission name="tran8">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="femur_to_tibia_4">
+      <hardwareInterface>EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor8">
+      <hardwareInterface>EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+</robot>

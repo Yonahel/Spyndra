@@ -1,0 +1,24 @@
+<launch>
+
+  <!-- Load joint controller configurations from YAML file to parameter server -->
+  <rosparam file="$(find spyndra_control)/config/spyndra_control.yaml" command="load"/>
+
+  <!-- load the controllers -->
+  <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false"
+	output="screen" ns="/spyndra" args="joint_state_controller
+					  base_to_femur_1_position_controller
+					  base_to_femur_2_position_controller
+            base_to_femur_3_position_controller
+            base_to_femur_4_position_controller
+            femur_to_tibia_1_position_controller
+            femur_to_tibia_2_position_controller
+            femur_to_tibia_3_position_controller
+            femur_to_tibia_4_position_controller"/>
+
+  <!-- convert joint states to TF transforms for rviz, etc -->
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"
+	respawn="false" output="screen">
+    <remap from="/joint_states" to="/spyndra/joint_states" />
+  </node>
+
+</launch>
