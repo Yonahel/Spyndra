@@ -24,7 +24,7 @@ def callback(data):
     motor_state_publisher.publish(motor_signal)
 
 def joint_state_listener():
-    # rospy.init_node('joint_state_listener', anonymous=True)
+    rospy.init_node('joint_state_listener', anonymous=True)
 
     rospy.Subscriber("/spyndra/joint_states", JointState, callback)
     

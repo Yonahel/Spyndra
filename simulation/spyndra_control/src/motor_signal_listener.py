@@ -13,7 +13,7 @@ b2f_1, b2f_2, b2f_3, b2f_4, f2t_1, f2t_2, f2t_3, f2t_4 = None, None, None, None,
 
 def init_joint_position_publishers():
     #Initiate node for controlling joint positions.
-    #rospy.init_node('joint_positions_node', anonymous=True)
+    rospy.init_node('joint_positions_node', anonymous=True)
 
 	#Define publishers for each joint position controller commands.
     b2f_1 = rospy.Publisher('/spyndra/base_to_femur_1_position_controller/command', Float64, queue_size=10)
@@ -50,5 +50,5 @@ def motor_signal_listener():
 if __name__ == '__main__':
     init_joint_position_publishers()
 
-    try: motor_signal_listener()
+    try: spyndra_joint_positions_publisher()
     except rospy.ROSInterruptException: pass

@@ -14,8 +14,7 @@ class GazeboEnv():
 
 	def __init__(self, launchfile):
 
-		#port = os.environ["ROS_PORT_SIM"]
-		port = "11311"
+		port = os.environ["ROS_PORT_SIM"]
 		#start roscore
 		subprocess.Popen(["roscore", "-p", port])
 		time.sleep(1)
@@ -26,8 +25,6 @@ class GazeboEnv():
 
 		if launchfile.startswith("/"):
 			fullpath = launchfile
-		elif launchfile.startswith("~"):
-			fullpath = os.path.expanduser('~') + launchfile [1:]
 		else:
 			fullpath = os.path.join(os.path.dirname(__file__), "assets","launch", launchfile)
 		if not path.exists(fullpath):

@@ -20,6 +20,5 @@
 	respawn="false" output="screen">
     <remap from="/joint_states" to="/spyndra/joint_states" />
   </node>
-  <node name="motor_signal_listener" pkg="spyndra_control" type="motor_signal_listener.py" output="screen"/>
-  <node name="motor_state_publisher" pkg="spyndra_control" type="motor_state_publisher.py" output="screen"/>
+
 </launch>
