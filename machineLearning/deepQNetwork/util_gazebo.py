@@ -1,17 +1,23 @@
 import numpy as np
 import gazebo_env
-
-#from std_srvs.srv import Empty
-#from spyndra.msg import MotorSignal
-#from sensor_msgs.msg import Imu
+import roslaunch
+import os
+import rospy
+from std_srvs.srv import Empty
+from spyndra.msg import MotorSignal
+from sensor_msgs.msg import Imu
 
 
 class SpyndraEnv(gazebo_env.GazeboEnv):
 	def __init__(self):
 		# Launch the simulation with the given launchfile name
-		gazebo_env.GazeboEnv.__init__(self, "GazeboCircuit2TurtlebotLidar_v0.launch")
-
-		# TODO for Shawn... (synchronize with gazebo)
+		gazebo_env.GazeboEnv.__init__(self, "~/catkin_ws/src/spyndra_gazebo/launch/spyndra_world.launch")
+		
+		uuid = roslaunch.rlutil.get_or_generate_uuid(None, False)
+		roslaunch.configure_logging(uuid)
+		launch = roslaunch.parent.ROSLaunchParent(uuid, [os.path.expanduser('~') + "/catkin_ws/src/spyndra_control/launch/spyndra_control.launch"])
+		launch.start()
+		
 		self.action_publisher = rospy.Publisher('motor_signal', MotorSignal, queue_size=5)
 		self.unpause = rospy.ServiceProxy('/gazebo/unpause_physics', Empty)
 		self.pause = rospy.ServiceProxy('/gazebo/pause_physics', Empty)
@@ -58,7 +64,7 @@ class SpyndraEnv(gazebo_env.GazeboEnv):
 		motor_data = None
 		while motor_data is None:
 			try:
-				motor_data = rospy.wait_for_message('motor_signal', MotorSignal, timeout=5)
+				motor_data = rospy.wait_for_message('motor_state', MotorSignal, timeout=5)
 				s_[:8] = motor_data
 			except:
 				pass
@@ -75,7 +81,7 @@ class SpyndraEnv(gazebo_env.GazeboEnv):
 
 	def _step(self, action, s):
 		# take action and update the observation(state)
-	
+		
 		rospy.wait_for_service('/gazebo/unpause_physics')
 		try:
 				self.unpause()
