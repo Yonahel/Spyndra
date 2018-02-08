@@ -57,7 +57,7 @@ $ roscore
 2. Start running all the nodes
 ```
 $ rosrun spyndra bno055_node.py
-$ rosrun spyndra motor_control_node.py
+$ rosrun spyndra control_node.py
 $ rosrun spyndra spyndra_node.py
 $ rosrun spyndra user.py
 ```
@@ -69,7 +69,7 @@ $ rosrun spyndra user.py
 	3. "3" is for "cmd_3": not yet assigned
     4. "4" is for "cmd_4": not yet assigned
 
-4. To check current motor signals sent to Spyndra by motor_control_node:
+4. To check current motor signals sent to Spyndra by control_node:
 ```
 rostopic echo /motor_signal
 ```
