@@ -27,6 +27,7 @@ def run(episode, timestep):
 
             # break while loop when end of this episode
             if done:
+                break
             step += 1
 
     # end of game
