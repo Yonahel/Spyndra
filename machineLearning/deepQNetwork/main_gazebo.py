@@ -1,6 +1,7 @@
 from dqn import DeepQNetwork
 from util_gazebo import SpyndraEnv
 
+
 def run(episode, timestep):
     for ep in range(episode):
         # initial observation

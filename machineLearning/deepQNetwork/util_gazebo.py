@@ -8,6 +8,7 @@ from spyndra.msg import MotorSignal
 from sensor_msgs.msg import Imu
 import sys
 
+
 class SpyndraEnv(gazebo_env.GazeboEnv):
 	def __init__(self):
 		# Launch the simulation with the given launchfile name

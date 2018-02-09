@@ -1,4 +1,3 @@
-#import gym
 #import rospy
 #import roslaunch
 import os
