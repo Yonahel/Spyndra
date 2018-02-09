@@ -12,20 +12,21 @@ import sys
 class SpyndraEnv(gazebo_env.GazeboEnv):
 	def __init__(self):
 		# Launch the simulation with the given launchfile name
+		print "PYTHONLOG: Launching GAZEBO"
 		gazebo_env.GazeboEnv.__init__(self, "~/catkin_ws/src/spyndra_gazebo/launch/spyndra_world.launch")
 		rospy.wait_for_service('/gazebo/unpause_physics')
 		uuid = roslaunch.rlutil.get_or_generate_uuid(None, False)
 		roslaunch.configure_logging(uuid)
 		launch = roslaunch.parent.ROSLaunchParent(uuid, [os.path.expanduser('~') + "/catkin_ws/src/spyndra_control/launch/spyndra_control.launch"])
 		launch.start()
-		
+		print "PYTHONLOG: Launch finished. Start node initiation"
 		rospy.init_node('spyndra_env', anonymous=True)
 
 		self.action_publisher = rospy.Publisher('motor_signal', MotorSignal, queue_size=5)
 		self.unpause = rospy.ServiceProxy('/gazebo/unpause_physics', Empty)
 		self.pause = rospy.ServiceProxy('/gazebo/pause_physics', Empty)
 		self.reset_proxy = rospy.ServiceProxy('/gazebo/reset_simulation', Empty)
-
+		print "node initiaiton finished"
 		self.reward_range = (-np.inf, np.inf)
 		
 		#self._seed()
@@ -107,7 +108,7 @@ class SpyndraEnv(gazebo_env.GazeboEnv):
 			self.action_publisher.publish(motor_signal)
 		except:
 			print ("cannot publish action")
-
+		#print "action published..."
 		# update the observation based on new action
 		# last 5 actions update (shift right)
 		s_[24: 29] = np.hstack((action, s_[24:28]))
@@ -115,6 +116,7 @@ class SpyndraEnv(gazebo_env.GazeboEnv):
 		# imu data update
 		imu_data = None
 		while imu_data is None:
+		#	print "Waiting for IMU message..."
 			try:
 				imu_data = rospy.wait_for_message('imu', Imu, timeout=5)
 				s_[29:35] = [imu_data.linear_acceleration.x, imu_data.linear_acceleration.y, imu_data.linear_acceleration.z, \
@@ -122,16 +124,17 @@ class SpyndraEnv(gazebo_env.GazeboEnv):
 			except:
 				pass
 		# TODO: Parse imu_data
-		
+		#print imu_data	
 		# motor data update
 		motor_data = None
 		while motor_data is None:
+		#	print "Waiting for motor message..."
 			try:
-				motor_data = rospy.wait_for_message('motor_signal', MotorSignal, timeout=5)
+				motor_data = rospy.wait_for_message('motor_state', MotorSignal, timeout=5)
 				s_[:8] = motor_data
 			except:
 				pass
-		
+		#print motor_data
 		rospy.wait_for_service('/gazebo/pause_physics')
 		try:
 			self.pause()

@@ -51,7 +51,8 @@ class DeepQNetwork:
 		if output_graph:
 			# $ tensorboard --logdir=logs
 			# tf.train.SummaryWriter soon be deprecated, use following
-			tf.summary.FileWriter("logs/", self.sess.graph)
+			writer = tf.summary.FileWriter("", self.sess.graph)
+			writer.close()
 
 		self.sess.run(tf.global_variables_initializer())
 		self.cost_his = []
