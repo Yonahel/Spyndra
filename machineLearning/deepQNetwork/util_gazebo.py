@@ -6,6 +6,7 @@ import rospy
 from std_srvs.srv import Empty
 from spyndra.msg import MotorSignal
 from sensor_msgs.msg import Imu
+from gazebo_msgs.msg import ModelStates
 import sys
 
 
@@ -52,7 +53,7 @@ class SpyndraEnv(gazebo_env.GazeboEnv):
 		except (rospy.ServiceException) as e:
 			print ("/gazebo/unpause_physics service call failed")
 		
-		s_ = np.zeros(35)
+		s_ = np.zeros(38)
 		# imu data update
 		imu_data = None
 		while imu_data is None:
@@ -73,6 +74,17 @@ class SpyndraEnv(gazebo_env.GazeboEnv):
 			except:
 				pass
 		
+		# position data update
+		position_data = None
+		while position_data is None:
+		#	print "Waiting for motor message..."
+			try:
+				position_data = rospy.wait_for_message('/gazebo/model_states', ModelStates, timeout=5)
+				index = position_data.name.index("spyndra")
+				s_[35:38] = [position_data.pose[index].position.x, position_data.pose[index].position.y, position_data.pose[index].position.y]
+			except:
+				pass
+
 		rospy.wait_for_service('/gazebo/pause_physics')
 		try:
 			#resp_pause = pause.call()
@@ -94,7 +106,7 @@ class SpyndraEnv(gazebo_env.GazeboEnv):
 	
 	
 		s_ = s.copy()
-		motor_index = action & 3 
+		motor_index = action / 3 
 		# action = 0(decrease by MOTORSTEP), 1(maintain), 1(increase by MOTORSTEP)
 		action = (action - motor_index * 3) - 1
 		
@@ -135,6 +147,20 @@ class SpyndraEnv(gazebo_env.GazeboEnv):
 			except:
 				pass
 		#print motor_data
+
+		# position data update
+		position_data = None
+		index = 0
+		while position_data is None:
+		#	print "Waiting for motor message..."
+			try:
+				position_data = rospy.wait_for_message('/gazebo/model_states', ModelStates, timeout=5)
+				index = position_data.name.index("spyndra")
+				s_[35:38] = [position_data.pose[index].position.x, position_data.pose[index].position.y, position_data.pose[index].position.y]
+			except:
+				pass
+		#print position data
+		
 		rospy.wait_for_service('/gazebo/pause_physics')
 		try:
 			self.pause()

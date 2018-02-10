@@ -5,31 +5,12 @@ import sys
 import time
 
 from std_msgs.msg import Float64
-from spyndra.msg import MotorSignal
-
-
-#Spyndra joint position publishers for joint controllers.
-b2f_1, b2f_2, b2f_3, b2f_4, f2t_1, f2t_2, f2t_3, f2t_4 = None, None, None, None, None, None, None, None
-
-def init_joint_position_publishers():
-    #Initiate node for controlling joint positions.
-    #rospy.init_node('joint_positions_node', anonymous=True)
-    global b2f_1, b2f_2, b2f_3, b2f_4, f2t_1, f2t_2, f2t_3, f2t_4
-	#Define publishers for each joint position controller commands.
-    b2f_1 = rospy.Publisher('/spyndra/base_to_femur_1_position_controller/command', Float64, queue_size=10)
-    b2f_2 = rospy.Publisher('/spyndra/base_to_femur_2_position_controller/command', Float64, queue_size=10)
-    b2f_3 = rospy.Publisher('/spyndra/base_to_femur_3_position_controller/command', Float64, queue_size=10)
-    b2f_4 = rospy.Publisher('/spyndra/base_to_femur_4_position_controller/command', Float64, queue_size=10)
-    f2t_1 = rospy.Publisher('/spyndra/femur_to_tibia_1_position_controller/command', Float64, queue_size=10)
-    f2t_2 = rospy.Publisher('/spyndra/femur_to_tibia_2_position_controller/command', Float64, queue_size=10)
-    f2t_3 = rospy.Publisher('/spyndra/femur_to_tibia_3_position_controller/command', Float64, queue_size=10)
-    f2t_4 = rospy.Publisher('/spyndra/femur_to_tibia_4_position_controller/command', Float64, queue_size=10)
+from spyndra.msg import MotorSignal 
 
 def callback(data):
     motor_signal = data
     signal = motor_signal.signal
 
-    global b2f_1, b2f_2, b2f_3, b2f_4, f2t_1, f2t_2, f2t_3, f2t_4
     b2f_1.publish(signal[0])
     b2f_2.publish(signal[1])
     b2f_3.publish(signal[2])
@@ -40,7 +21,6 @@ def callback(data):
     f2t_4.publish(signal[7])
 
 def motor_signal_listener():
-    rospy.init_node('motor_signal_listener', anonymous=True)
     while not rospy.is_shutdown():
         rospy.Subscriber("motor_signal", MotorSignal, callback)
 
@@ -49,7 +29,17 @@ def motor_signal_listener():
 
 #Main section of code that will continuously run unless rospy receives interuption (ie CTRL+C)
 if __name__ == '__main__':
-    init_joint_position_publishers()
+    # Init Spyndra joint position publishers for joint controllers.
+    b2f_1 = rospy.Publisher('/spyndra/base_to_femur_1_position_controller/command', Float64, queue_size=10)
+    b2f_2 = rospy.Publisher('/spyndra/base_to_femur_2_position_controller/command', Float64, queue_size=10)
+    b2f_3 = rospy.Publisher('/spyndra/base_to_femur_3_position_controller/command', Float64, queue_size=10)
+    b2f_4 = rospy.Publisher('/spyndra/base_to_femur_4_position_controller/command', Float64, queue_size=10)
+    f2t_1 = rospy.Publisher('/spyndra/femur_to_tibia_1_position_controller/command', Float64, queue_size=10)
+    f2t_2 = rospy.Publisher('/spyndra/femur_to_tibia_2_position_controller/command', Float64, queue_size=10)
+    f2t_3 = rospy.Publisher('/spyndra/femur_to_tibia_3_position_controller/command', Float64, queue_size=10)
+    f2t_4 = rospy.Publisher('/spyndra/femur_to_tibia_4_position_controller/command', Float64, queue_size=10)
+
+    rospy.init_node('motor_signal_listener', anonymous=True)
 
     try: motor_signal_listener()
     except rospy.ROSInterruptException: pass

@@ -22,7 +22,7 @@ class DeepQNetwork:
 	):
 		self.n_actions = n_actions
 		#self.n_features = n_features
-		self.n_features = 35
+		self.n_features = n_features
 		self.lr = learning_rate
 		self.gamma = reward_decay
 		self.epsilon_max = e_greedy

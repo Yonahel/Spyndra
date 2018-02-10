@@ -38,7 +38,7 @@ def run(episode, timestep):
     print('game over')
 
 n_actions  = 24
-n_features = 35
+n_features = 38
 EPISODE = 100
 TIMESTEP = 1000
 

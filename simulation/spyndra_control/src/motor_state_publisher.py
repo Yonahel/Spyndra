@@ -4,28 +4,16 @@ import math
 import sys
 import time
 
-# from std_msgs.msg import Float64
 from sensor_msgs.msg import JointState
 from spyndra.msg import MotorSignal
-
-motor_state_publisher = None
-
-def init_motor_state_publisher():
-    #Initiate node for controlling joint positions.
-    rospy.init_node('motor_state_publisher', anonymous=True)
-
-    global motor_state_publisher
-    motor_state_publisher = rospy.Publisher('motor_state', MotorSignal, queue_size=5)
 
 def callback(data):
     motor_signal = MotorSignal()
     motor_signal.motor_type = 1
     motor_signal.signal = data.position
-    global motor_state_publisher
     motor_state_publisher.publish(motor_signal)
 
 def joint_state_listener():
-    # rospy.init_node('joint_state_listener', anonymous=True)
     while not rospy.is_shutdown():
         rospy.Subscriber("/spyndra/joint_states", JointState, callback)
         
@@ -34,7 +22,9 @@ def joint_state_listener():
 
 #Main section of code that will continuously run unless rospy receives interuption (ie CTRL+C)
 if __name__ == '__main__':
-    init_motor_state_publisher()
+    rospy.init_node('motor_state_publisher', anonymous=True)
+
+    motor_state_publisher = rospy.Publisher('motor_state', MotorSignal, queue_size=5)
 
     try: joint_state_listener()
     except rospy.ROSInterruptException: pass
