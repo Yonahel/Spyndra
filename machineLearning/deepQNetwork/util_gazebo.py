@@ -3,6 +3,7 @@ import gazebo_env
 import roslaunch
 import os
 import rospy
+import time
 from std_srvs.srv import Empty
 from spyndra.msg import MotorSignal
 from sensor_msgs.msg import Imu
@@ -29,7 +30,11 @@ class SpyndraEnv(gazebo_env.GazeboEnv):
 		self.reset_proxy = rospy.ServiceProxy('/gazebo/reset_simulation', Empty)
 		print "node initiaiton finished"
 		self.reward_range = (-np.inf, np.inf)
-		
+
+		self.START_TIME = time.time()
+		self.INIT_POS = None
+		self.GOAL = None
+		self.INIT_DIST = None
 		#self._seed()
 
 	#def _seed(self, seed=None):
@@ -82,9 +87,13 @@ class SpyndraEnv(gazebo_env.GazeboEnv):
 				position_data = rospy.wait_for_message('/gazebo/model_states', ModelStates, timeout=5)
 				index = position_data.name.index("spyndra")
 				s_[35:38] = [position_data.pose[index].position.x, position_data.pose[index].position.y, position_data.pose[index].position.y]
+				self.INIT_POS = np.array(s_[35:38])
+				self.GOAL = np.array(self.INIT_POS, copy=True)
+				self.GOAL[0] += 100
+				self.INIT_DIST = np.linalg.norm(self.INIT_POS - self.GOAL)
 			except:
 				pass
-
+		
 		rospy.wait_for_service('/gazebo/pause_physics')
 		try:
 			#resp_pause = pause.call()
@@ -158,23 +167,29 @@ class SpyndraEnv(gazebo_env.GazeboEnv):
 				s_[35:38] = [position_data.pose[index].position.x, position_data.pose[index].position.y, position_data.pose[index].position.y]
 			except:
 				pass
-		#print position data
+		#print position_data
 		
 		rospy.wait_for_service('/gazebo/pause_physics')
 		try:
 			self.pause()
 		except (rospy.ServiceException) as e:
 			print ("/gazebo/pause_physics service call failed")
-	
-		# here we simply assume Spyndra want's to move in x direction
-		x_acc, y_acc, z_acc = s_[29:32]
-	
-		# euclidean norm of accleration
-		reward = x_acc / np.linalg.norm([x_acc, y_acc, z_acc])
+
+
+		# Time reward
+		time_reward = 60 - .1 * (time.time() - self.START_TIME)
 		
+		# Distance reward
+		dist2goal = np.linalg.norm(np.array(s_[35:38]) - self.GOAL)
+		dist_reward = (self.INIT_DIST - dist2goal) * 15. / self.INIT_DIST
+		# Angel reward
+		#angl_reward = (2 * np.pi - angl2goal) * 15. / (2 * np.pi)
+
+		# euclidean norm of accleration
+		reward = time_reward * 2 + dist_reward #+ angl_reward
+	
 		# threshold TBD
-		THRESHOLD = 1
-		if x_acc > THRESHOLD:
+		if dist_reward == 15:
 			done = True
 		else:
 			done = False
