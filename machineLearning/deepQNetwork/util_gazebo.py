@@ -150,7 +150,6 @@ class SpyndraEnv(gazebo_env.GazeboEnv):
 
 		# position data update
 		position_data = None
-		index = 0
 		while position_data is None:
 		#	print "Waiting for motor message..."
 			try:
