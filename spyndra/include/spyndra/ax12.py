@@ -256,7 +256,10 @@ class Ax12:
         return self.readData(id)
 
     # move servo to position (0~300 degree: 0~1023)
-    def move(self, id, position):
+    def move(self, id, position, instant=False):
+        if not instant:
+            while self.readMovingStatus(id) == 1:
+                pass
         self.port.flushInput()
         p = [position&0xff, position>>8]
         checksum = (~(id + Ax12.AX_GOAL_LENGTH + Ax12.AX_WRITE_DATA + Ax12.AX_GOAL_POSITION_L + p[0] + p[1]))&0xff
@@ -273,8 +276,12 @@ class Ax12:
         sleep(Ax12.TX_DELAY_TIME)
         return self.readData(id)
 
-    # move at speed (0~114 rpm: 0~1023) to position 
-    def moveSpeed(self, id, position, speed):
+    # move at speed (0~114 rpm: 0~1023) to position
+    # instant means don't wait previous movement finish
+    def moveSpeed(self, id, position, speed, instant=False):
+        if not instant:
+            while self.readMovingStatus(id) == 1:
+                pass
         self.port.flushInput()
         p = [position&0xff, position>>8]
         s = [speed&0xff, speed>>8]
@@ -295,7 +302,10 @@ class Ax12:
         return self.readData(id)
 
     # reg-write mode, similar to write-data, but remain in the standby state until ACTION command
-    def moveRW(self, id, position):
+    def moveRW(self, id, position, instant=False):
+        if not instant:
+            while self.readMovingStatus(id) == 1:
+                pass
         self.port.flushInput()
         p = [position&0xff, position>>8]
         checksum = (~(id + Ax12.AX_GOAL_LENGTH + Ax12.AX_REG_WRITE + Ax12.AX_GOAL_POSITION_L + p[0] + p[1]))&0xff
@@ -312,7 +322,10 @@ class Ax12:
         sleep(Ax12.TX_DELAY_TIME)
         return self.readData(id)
 
-    def moveSpeedRW(self, id, position, speed):
+    def moveSpeedRW(self, id, position, speed, instant=False):
+        if not instant:
+            while self.readMovingStatus(id) == 1:
+                pass
         self.port.flushInput()
         p = [position&0xff, position>>8]
         s = [speed&0xff, speed>>8]
