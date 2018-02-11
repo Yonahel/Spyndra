@@ -2,7 +2,7 @@
 import rospy
 from std_msgs.msg import String
 from spyndra.msg import MotorSignal
-import ax12
+from spyndra import ax12
 # from spyndra import adafruitModule
 import ast
 

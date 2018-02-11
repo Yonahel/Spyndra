@@ -38,7 +38,7 @@ import rospy
 import message_filters
 from std_msgs.msg import String
 from sensor_msgs.msg import Imu
-# from spyndra import gaitModule
+from spyndra import gaitModule
 from spyndra.msg import MotorSignal
 
 # from BNO055 import *
@@ -196,7 +196,7 @@ class ControlNode:
             phase = 0
             motor_minmax_values = 250, 300
             motor_type = 1
-            output = (512,512,512,512,512,512,512,512)
+            output = (0,512,512,512,512,512,512,512)
               # set publisher and publish computed motor signals
             pub = rospy.Publisher("motor_signal", MotorSignal, queue_size=10)
             motor_signal = MotorSignal()
