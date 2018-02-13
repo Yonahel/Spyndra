@@ -191,6 +191,21 @@ class ControlNode:
         s = 'mode set to be:'+ str(user_input)
         rospy.loginfo(s)
 
+        # test command for ax-12
+        if self.mode == 'cmd_4':
+            phase = 0
+            motor_minmax_values = 250, 300
+            motor_type = 1
+            output = (0,512,512,512,512,512,512,512)
+              # set publisher and publish computed motor signals
+            pub = rospy.Publisher("motor_signal", MotorSignal, queue_size=10)
+            motor_signal = MotorSignal()
+            motor_signal.motor_type = motor_type
+            motor_signal.chassis_1, motor_signal.chassis_2, motor_signal.chassis_3, motor_signal.chassis_4, \
+            motor_signal.tibia_1,   motor_signal.tibia_2,   motor_signal.tibia_3,   motor_signal.tibia_4 \
+                             = output
+            pub.publish(motor_signal)
+
 def main():
     rospy.init_node("control_node")
     n = ControlNode()

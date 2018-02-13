@@ -1,39 +1,56 @@
-import serial                     # we need to import the pySerial stuff to use
+import ax12, time
+a = ax12.Ax12()
+motor_id = 1
 
-# important AX-12 constants
-AX_WRITE_DATA = 3
-AX_READ_DATA = 4
+# id test
+print 'ping id'
+a.ping(motor_id)
+a.scanServos(verbose=True)
+print 'set id to 2'
+a.setID(motor_id,2)
+a.scanServos(verbose=True)
+print 'reset motor'
+a.factoryReset(2,confirm=True)
+a.scanServos(verbose=True)
 
-s = serial.Serial()               # create a serial port object
-s.baudrate = 1000000              # baud rate, in bits/second
-#s.port = "/dev/ttyUSB0"           # servo's port
-#s.open()
+# read tests
+print 'temperature: ' + str(a.readTemperature(motor_id))
+print 'position: ' + str(a.readPosition(motor_id))
+print 'voltage: ' + str(a.readVoltage(motor_id))
+print 'present speed:' + str(a.readPresentSpeed(motor_id))
+print 'goal speed:' + str(a.readGoalSpeed(motor_id))
+print 'read load: ' + str(a.readLoad(motor_id))
+print 'moving status:' + str(a.readMovingStatus(motor_id))
+print 'reg-write instruction in use: ' + str(a.readRWStatus(motor_id))
 
-# set register values
-def setReg(ID,reg,values):
-    length = 3 + len(values)
-    checksum = 255-((index+length+AX_WRITE_DATA+reg+sum(values))%256)          
-    s.write(chr(0xFF)+chr(0xFF)+chr(ID)+chr(length)+chr(AX_WRITE_DATA)+chr(reg))
-    for val in values:
-        s.write(chr(val))
-    s.write(chr(checksum))
+# movement test
+print 'move to 0'
+a.move(motor_id,0)
 
-def getReg(index, regstart, rlength):
-    s.flushInput()   
-    checksum = 255 - ((6 + index + regstart + rlength)%256)
-    s.write(chr(0xFF)+chr(0xFF)+chr(index)+chr(0x04)+chr(AX_READ_DATA)+chr(regstart)+chr(rlength)+chr(checksum))
-    vals = list()
-    s.read()   # 0xff
-    s.read()   # 0xff
-    s.read()   # ID
-    length = ord(s.read()) - 1
-    s.read()   # toss error    
-    while length > 0:
-        vals.append(ord(s.read()))
-        length = length - 1
-    if rlength == 1:
-        return vals[0]
-    return vals
+print 'move to 1023'
+a.move(motor_id,1023)
 
-setReg(1,30,((512%256),(512>>8)))  # this will move servo 1 to centered position (512)
-print getReg(1,43,1)               # get the temperature
+print 'move to 0 at speed 512'
+a.moveSpeed(motor_id,0,512)
+
+print 'move to 1023 at speed 512'
+a.moveSpeed(motor_id,1023,512)
+
+
+# reg-write movement test
+a.moveRW(motor_id,0)
+a.readRWStatus(motor_id)
+a.action()
+
+a.moveSpeedRW(motor_id,1023,200)
+a.readRWStatus(motor_id)
+a.action()
+
+# accuracy test
+print 'move to 400 at speed 300'
+a.moveSpeed(motor_id,400,300)
+print 'present speed:' + str(a.readPresentSpeed(motor_id))
+while a.readMovingStatus(motor_id) == 1:
+	pass
+print 'goal speed:' + str(a.readGoalSpeed(motor_id))
+print 'position: ' + str(a.readPosition(motor_id))
