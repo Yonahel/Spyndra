@@ -1,2 +1,2 @@
-int32 motor_type
-float64[] signal
+int32 speed
+int32[] signal
