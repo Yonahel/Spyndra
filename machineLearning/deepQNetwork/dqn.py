@@ -85,7 +85,10 @@ class DeepQNetwork:
 				self.q_eval = tf.matmul(l2, w3) + b3
 
 		with tf.variable_scope('loss'):
-			self.loss = tf.reduce_mean(tf.squared_difference(self.q_target, self.q_eval))
+			delta = self.q_target - self.q_eval
+			self.huber_loss = tf.where(tf.abs(delta) < 1.0, 0.5 * tf.square(delta), tf.abs(delta) - 0.5)
+			self.loss = tf.reduce_mean(self.huber_loss)
+			#self.loss = tf.reduce_mean(tf.squared_difference(self.q_target, self.q_eval))
 		with tf.variable_scope('train'):
 			self._train_op = tf.train.RMSPropOptimizer(self.lr).minimize(self.loss)
 
