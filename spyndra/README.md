@@ -63,11 +63,11 @@ $ rosrun spyndra user.py
 ```
 
 3. Press number "1", "2", "3", "4" under terminal screen that is running "user.py" node to send motor command to spyndra. (Now it's still under development, so the command type maybe changed)
-
+	0. "0" is for "cmd_0": calibration
 	1. "1" is for "cmd_1": standing Gait
 	2. "2" is for "cmd_2": random Gait
 	3. "3" is for "cmd_3": not yet assigned
-    4. "4" is for "cmd_4": not yet assigned
+    	4. "4" is for "cmd_4": for testing purposes
 
 4. To check current motor signals sent to Spyndra by control_node:
 ```
