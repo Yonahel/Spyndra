@@ -144,6 +144,8 @@ class SpyndraEnv(gazebo_env.GazeboEnv):
 			motor_signal.motor_type = 1
 			motor_signal.signal = s_[18:26]
 			motor_signal.signal[motor_index] += action * MOTORSTEP
+			# for i in xrange(8):
+			# 	motor_signal.signal[i] = int(round(motor_signal.signal[i]))
 			self.action_publisher.publish(motor_signal)
 		except:
 			print ("cannot publish action")
@@ -166,6 +168,8 @@ class SpyndraEnv(gazebo_env.GazeboEnv):
 			try:
 				motor_data = rospy.wait_for_message('motor_state', MotorSignal, timeout=5)
 				s_[:8] = motor_data.signal
+				# for i in xrange(8):
+				# 	s_[i] = int(round(s_[i]))
 			except:
 				pass
 		
@@ -179,10 +183,6 @@ class SpyndraEnv(gazebo_env.GazeboEnv):
 				s_[15: 18] = [position_data.pose[index].position.x, position_data.pose[index].position.y, position_data.pose[index].position.y]
 			except:
 				pass
-		
-		
-
-
 
 		rospy.wait_for_service('/gazebo/pause_physics')
 		try:

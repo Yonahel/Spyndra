@@ -9,7 +9,7 @@ from spyndra.msg import MotorSignal
 
 def callback(data):
     motor_signal = data
-    signal = [(s - 512) * 0.00511326497 for s in motor_signal.signal]
+    signal = [int(round((s - 512) * 0.00511326497)) for s in motor_signal.signal]
     b2f_1.publish(signal[0])
     b2f_2.publish(signal[1])
     b2f_3.publish(signal[2])
