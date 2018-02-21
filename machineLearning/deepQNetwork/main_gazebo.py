@@ -33,6 +33,7 @@ def run(episode, timestep):
             if done:
                 break
             step += 1
+            time.sleep(2)
 
     # end of game
     print('game over')

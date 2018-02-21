@@ -49,7 +49,7 @@ class SpyndraEnv(gazebo_env.GazeboEnv):
 			self.reset_proxy()
 		except (rospy.ServiceException) as e:
 			print ("/gazebo/reset_simulation service call failed")
-		
+
 		# Unpause simulation to make observation
 		rospy.wait_for_service('/gazebo/unpause_physics')
 		try:
@@ -57,6 +57,17 @@ class SpyndraEnv(gazebo_env.GazeboEnv):
 			self.unpause()
 		except (rospy.ServiceException) as e:
 			print ("/gazebo/unpause_physics service call failed")
+
+		time.sleep(2)
+		try:
+			motor_signal = MotorSignal()
+			motor_signal.motor_type = 1
+			motor_signal.signal = [512, 512, 512, 512, 768, 768, 768, 768]
+			self.action_publisher.publish(motor_signal)
+		except:
+			print ("cannot publish action")
+
+		time.sleep(2)
 		
 		s_ = np.zeros(38)
 		# imu data update
@@ -75,7 +86,7 @@ class SpyndraEnv(gazebo_env.GazeboEnv):
 		while motor_data is None:
 			try:
 				motor_data = rospy.wait_for_message('motor_state', MotorSignal)
-				s_[:8] = motor_data
+				s_[:8] = motor_data.signal
 			except:
 				pass
 		
@@ -133,7 +144,7 @@ class SpyndraEnv(gazebo_env.GazeboEnv):
 		# update the observation based on new action
 		# last 5 actions update (shift right)
 		s_[24: 29] = np.hstack((action, s_[24:28]))
-		
+
 		# imu data update
 		imu_data = None
 		while imu_data is None:
@@ -152,7 +163,7 @@ class SpyndraEnv(gazebo_env.GazeboEnv):
 		#	print "Waiting for motor message..."
 			try:
 				motor_data = rospy.wait_for_message('motor_state', MotorSignal, timeout=5)
-				s_[:8] = motor_data
+				s_[:8] = motor_data.signal
 			except:
 				pass
 		#print motor_data
@@ -174,7 +185,6 @@ class SpyndraEnv(gazebo_env.GazeboEnv):
 			self.pause()
 		except (rospy.ServiceException) as e:
 			print ("/gazebo/pause_physics service call failed")
-
 
 		# Time reward
 		time_reward = 60 - .1 * (time.time() - self.START_TIME)
