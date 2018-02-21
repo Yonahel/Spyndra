@@ -124,12 +124,11 @@ class SpyndraEnv(gazebo_env.GazeboEnv):
 		except (rospy.ServiceException) as e:
 				print ("/gazebo/unpause_physics service call failed")
 	
-	
+		
 		s_ = s.copy()
 		
 		# update previous state
 		s_ = np.hstack((np.zeros(18), s_[ :-18]))
-		
                 # store action into state
                 s_[8] = action	
 
@@ -143,7 +142,7 @@ class SpyndraEnv(gazebo_env.GazeboEnv):
 		try:
 			motor_signal = MotorSignal()
 			motor_signal.motor_type = 1
-			motor_signal.signal = s_[:8]
+			motor_signal.signal = s_[18:26]
 			motor_signal.signal[motor_index] += action * MOTORSTEP
 			self.action_publisher.publish(motor_signal)
 		except:
@@ -169,7 +168,7 @@ class SpyndraEnv(gazebo_env.GazeboEnv):
 				s_[:8] = motor_data.signal
 			except:
 				pass
-
+		
 		# position data update
 		position_data = None
 		while position_data is None:

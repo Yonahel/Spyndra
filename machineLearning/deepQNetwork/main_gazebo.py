@@ -12,7 +12,7 @@ def run(episode, timestep):
 	for t in range(timestep):
             # DQN choose action based on observation
             action = RL.choose_action(observation)
-
+            print(action)
             # DQN take action and get next observation and reward
             observation_, reward, done = env._step(action, observation)
 	    #print observation_[:18], observation_[18:36], observation_[36:54], observation_[54:72], observation_[72:]
@@ -33,7 +33,7 @@ def run(episode, timestep):
             if done:
                 break
             step += 1
-            time.sleep(2)
+            #time.sleep(2)
 
     # end of game
     print('game over')
