@@ -17,6 +17,42 @@
     </plugin>
   </gazebo>
 
+  <gazebo reference="base_link">
+    <selfCollide>true</selfCollide>
+  </gazebo>
+
+  <gazebo reference="femur_1">
+    <selfCollide>true</selfCollide>
+  </gazebo>
+
+  <gazebo reference="femur_2">
+    <selfCollide>true</selfCollide>
+  </gazebo>
+
+  <gazebo reference="femur_3">
+    <selfCollide>true</selfCollide>
+  </gazebo>
+
+  <gazebo reference="femur_4">
+    <selfCollide>true</selfCollide>
+  </gazebo>
+
+  <gazebo reference="tibia_1">
+    <selfCollide>true</selfCollide>
+  </gazebo>
+
+  <gazebo reference="tibia_2">
+    <selfCollide>true</selfCollide>
+  </gazebo>
+
+  <gazebo reference="tibia_3">
+    <selfCollide>true</selfCollide>
+  </gazebo>
+
+  <gazebo reference="tibia_4">
+    <selfCollide>true</selfCollide>
+  </gazebo>
+
   <link name="base_link">
     <visual>
       <geometry>
@@ -34,9 +70,9 @@
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <mass value="0.5"/>
       <inertia
-        ixx="0.023695" ixy="-0.000015" ixz="0.000084"
-        iyy="0.022543" iyz="0.000215"
-        izz="0.035806"/>
+        ixx="0.084981" ixy="0.000124" ixz="-0.000077"
+        iyy="0.083196" iyz="-0.000128"
+        izz="0.099084"/>
     </inertial>
   </link>
 
@@ -45,21 +81,21 @@
       <geometry>
         <mesh filename="package://spyndra_description/meshes/femur.stl"/>
       </geometry>
-      <origin rpy="0 -1.57075 0" xyz="0.5 0 0"/>
+      <origin rpy="0 0 0" xyz="0.4 0 0"/>
     </visual>
     <collision>
       <geometry>
         <mesh filename="package://spyndra_description/meshes/femur_col.stl"/>
       </geometry>
-      <origin rpy="0 -1.57075 0" xyz="0.5 0 0"/>
+      <origin rpy="0 0 0" xyz="0.4 0 0"/>
     </collision>
     <inertial>
-      <origin rpy="0 -1.57075 0" xyz="0.5 0 0"/>
+      <origin rpy="0 0 0" xyz="0.4 0 0"/>
       <mass value="0.1"/>
       <inertia
-        ixx="0.020186" ixy="0.000000" ixz="0.000480"
-        iyy="0.011942" iyz="0.000002"
-        izz="0.010980"/>
+        ixx="0.001433" ixy="0.000000" ixz="0.000000"
+        iyy="0.004311" iyz="0.000000"
+        izz="0.004255"/>
     </inertial>
   </link>
 
@@ -68,21 +104,21 @@
       <geometry>
         <mesh filename="package://spyndra_description/meshes/femur.stl"/>
       </geometry>
-      <origin rpy="0 -1.57075 1.57075" xyz="0 0.5 0"/>
+      <origin rpy="0 0 1.57075" xyz="0 0.4 0"/>
     </visual>
     <collision>
       <geometry>
         <mesh filename="package://spyndra_description/meshes/femur_col.stl"/>
       </geometry>
-      <origin rpy="0 -1.57075 1.57075" xyz="0 0.5 0"/>
+      <origin rpy="0 0 1.57075" xyz="0 0.4 0"/>
     </collision>
     <inertial>
-      <origin rpy="0 -1.57075 1.57075" xyz="0 0.5 0"/>
+      <origin rpy="0 0 1.57075" xyz="0 0.4 0"/>
       <mass value="0.1"/>
       <inertia
-        ixx="0.020186" ixy="0.000000" ixz="0.000480"
-        iyy="0.011942" iyz="0.000002"
-        izz="0.010980"/>
+        ixx="0.001433" ixy="0.000000" ixz="0.000000"
+        iyy="0.004311" iyz="0.000000"
+        izz="0.004255"/>
     </inertial>
   </link>
 
@@ -91,21 +127,21 @@
       <geometry>
         <mesh filename="package://spyndra_description/meshes/femur.stl"/>
       </geometry>
-      <origin rpy="0 -1.57075 3.1415" xyz="-0.5 0 0"/>
+      <origin rpy="0 0 3.1415" xyz="-0.4 0 0"/>
     </visual>
     <collision>
       <geometry>
         <mesh filename="package://spyndra_description/meshes/femur_col.stl"/>
       </geometry>
-      <origin rpy="0 -1.57075 3.1415" xyz="-0.5 0 0"/>
+      <origin rpy="0 -0 3.1415" xyz="-0.4 0 0"/>
     </collision>
     <inertial>
-      <origin rpy="0 -1.57075 3.1415" xyz="-0.5 0 0"/>
+      <origin rpy="0 0 3.1415" xyz="-0.4 0 0"/>
       <mass value="0.1"/>
       <inertia
-        ixx="0.020186" ixy="0.000000" ixz="0.000480"
-        iyy="0.011942" iyz="0.000002"
-        izz="0.010980"/>
+        ixx="0.001433" ixy="0.000000" ixz="0.000000"
+        iyy="0.004311" iyz="0.000000"
+        izz="0.004255"/>
     </inertial>
   </link>
 
@@ -114,21 +150,21 @@
       <geometry>
         <mesh filename="package://spyndra_description/meshes/femur.stl"/>
       </geometry>
-      <origin rpy="0 -1.57075 -1.57075" xyz="0 -0.5 0"/>
+      <origin rpy="0 0 -1.57075" xyz="0 -0.4 0"/>
     </visual>
     <collision>
       <geometry>
         <mesh filename="package://spyndra_description/meshes/femur_col.stl"/>
       </geometry>
-      <origin rpy="0 -1.57075 -1.57075" xyz="0 -0.5 0"/>
+      <origin rpy="0 0 -1.57075" xyz="0 -0.4 0"/>
     </collision>
     <inertial>
-      <origin rpy="0 -1.57075 -1.57075" xyz="0 -0.5 0"/>
+      <origin rpy="0 0 -1.57075" xyz="0 -0.4 0"/>
       <mass value="0.1"/>
       <inertia
-        ixx="0.020186" ixy="0.000000" ixz="0.000480"
-        iyy="0.011942" iyz="0.000002"
-        izz="0.010980"/>
+        ixx="0.001433" ixy="0.000000" ixz="0.000000"
+        iyy="0.004311" iyz="0.000000"
+        izz="0.004255"/>
     </inertial>
   </link>
 
@@ -137,21 +173,21 @@
       <geometry>
         <mesh filename="package://spyndra_description/meshes/tibia.stl"/>
       </geometry>
-      <origin rpy="1.57075 0 -1.57075" xyz="0.5 -0.05 0.1"/>
+      <origin rpy="1.57075 0 -1.57075" xyz="0.8 0 0.2"/>
     </visual>
     <collision>
       <geometry>
         <mesh filename="package://spyndra_description/meshes/tibia_col.stl"/>
       </geometry>
-      <origin rpy="1.57075 0 -1.57075" xyz="0.5 -0.05 0.1"/>
+      <origin rpy="1.57075 0 -1.57075" xyz="0.8 0 0.2"/>
     </collision>
     <inertial>
-      <origin rpy="1.57075 0 -1.57075" xyz="0.5 -0.05 0.1"/>
+      <origin rpy="1.57075 0 -1.57075" xyz="0.8 0 0.2"/>
       <mass value="0.1"/>
       <inertia
-        ixx="0.017079" ixy="0.000102" ixz="-0.000485"
-        iyy="0.015589" iyz="0.004667"
-        izz="0.003313"/>
+        ixx="0.012986" ixy="0.000000" ixz="0.000000"
+        iyy="0.012051" iyz="0.003922"
+        izz="0.002521"/>
     </inertial>
   </link>
 
@@ -160,21 +196,21 @@
       <geometry>
         <mesh filename="package://spyndra_description/meshes/tibia.stl"/>
       </geometry>
-      <origin rpy="1.57075 0 0" xyz="0.05 0.5 0.1"/>
+      <origin rpy="1.57075 0 0" xyz="0 0.8 0.2"/>
     </visual>
     <collision>
       <geometry>
         <mesh filename="package://spyndra_description/meshes/tibia_col.stl"/>
       </geometry>
-      <origin rpy="1.57075 0 0" xyz="0.05 0.5 0.1"/>
+      <origin rpy="1.57075 0 0" xyz="0 0.8 0.2"/>
     </collision>
     <inertial>
-      <origin rpy="1.57075 0 0" xyz="0.05 0.5 0.1"/>
+      <origin rpy="1.57075 0 0" xyz="0 0.8 0.2"/>
       <mass value="0.1"/>
       <inertia
-        ixx="0.017079" ixy="0.000102" ixz="-0.000485"
-        iyy="0.015589" iyz="0.004667"
-        izz="0.003313"/>
+        ixx="0.012986" ixy="0.000000" ixz="0.000000"
+        iyy="0.012051" iyz="0.003922"
+        izz="0.002521"/>
     </inertial>
   </link>
 
@@ -183,21 +219,21 @@
       <geometry>
         <mesh filename="package://spyndra_description/meshes/tibia.stl"/>
       </geometry>
-      <origin rpy="1.57075 0 1.57075" xyz="-0.5 0.05 0.1"/>
+      <origin rpy="1.57075 0 1.57075" xyz="-0.8 0 0.2"/>
     </visual>
     <collision>
       <geometry>
         <mesh filename="package://spyndra_description/meshes/tibia_col.stl"/>
       </geometry>
-      <origin rpy="1.57075 0 1.57075" xyz="-0.5 0.05 0.1"/>
+      <origin rpy="1.57075 0 1.57075" xyz="-0.8 0 0.2"/>
     </collision>
     <inertial>
-      <origin rpy="1.57075 0 1.57075" xyz="-0.5 0.05 0.1"/>
+      <origin rpy="1.57075 0 1.57075" xyz="-0.8 0 0.2"/>
       <mass value="0.1"/>
       <inertia
-        ixx="0.017079" ixy="0.000102" ixz="-0.000485"
-        iyy="0.015589" iyz="0.004667"
-        izz="0.003313"/>
+        ixx="0.012986" ixy="0.000000" ixz="0.000000"
+        iyy="0.012051" iyz="0.003922"
+        izz="0.002521"/>
     </inertial>
   </link>
 
@@ -206,84 +242,84 @@
       <geometry>
         <mesh filename="package://spyndra_description/meshes/tibia.stl"/>
       </geometry>
-      <origin rpy="1.57075 0 3.1415" xyz="-0.05 -0.5 0.1"/>
+      <origin rpy="1.57075 0 3.1415" xyz="0 -0.8 0.2"/>
     </visual>
     <collision>
       <geometry>
         <mesh filename="package://spyndra_description/meshes/tibia_col.stl"/>
       </geometry>
-      <origin rpy="1.57075 0 3.1415" xyz="-0.05 -0.5 0.1"/>
+      <origin rpy="1.57075 0 3.1415" xyz="0 -0.8 0.2"/>
     </collision>
     <inertial>
-      <origin rpy="1.57075 0 3.1415" xyz="-0.05 -0.5 0.1"/>
+      <origin rpy="1.57075 0 3.1415" xyz="0 -0.8 0.2"/>
       <mass value="0.1"/>
       <inertia
-        ixx="0.017079" ixy="0.000102" ixz="-0.000485"
-        iyy="0.015589" iyz="0.004667"
-        izz="0.003313"/>
+        ixx="0.012986" ixy="0.000000" ixz="0.000000"
+        iyy="0.012051" iyz="0.003922"
+        izz="0.002521"/>
     </inertial>
   </link>
 
   <joint name="base_to_femur_1" type="revolute">
-    <origin rpy="0 0 0" xyz="0.6 0 0.1"/>
+    <origin rpy="0 0 0" xyz="0.9 0 -0.2"/>
     <axis xyz="0 1 0"/>
-    <limit effort="50.0" lower="-2.0" upper="2.0" velocity="0.1"/>
+    <limit effort="100.0" lower="-1.5" upper="1.5" velocity="0.1"/>
     <parent link="base_link"/>
     <child link="femur_1"/>
   </joint>
 
   <joint name="base_to_femur_2" type="revolute">
-    <origin rpy="0 0 0" xyz="0 0.6 0.1"/>
+    <origin rpy="0 0 0" xyz="0 0.9 -0.2"/>
     <axis xyz="-1 0 0"/>
-    <limit effort="50.0" lower="-2.0" upper="2.0" velocity="0.1"/>
+    <limit effort="100.0" lower="-1.5" upper="1.5" velocity="0.1"/>
     <parent link="base_link"/>
     <child link="femur_2"/>
   </joint>
 
   <joint name="base_to_femur_3" type="revolute">
-    <origin rpy="0 0 0" xyz="-0.6 0 0.1"/>
+    <origin rpy="0 0 0" xyz="-0.9 0 -0.2"/>
     <axis xyz="0 -1 0"/>
-    <limit effort="50.0" lower="-2.0" upper="2.0" velocity="0.1"/>
+    <limit effort="100.0" lower="-1.5" upper="1.5" velocity="0.1"/>
     <parent link="base_link"/>
     <child link="femur_3"/>
   </joint>
 
   <joint name="base_to_femur_4" type="revolute">
-    <origin rpy="0 0 0" xyz="0 -0.6 0.1"/>
+    <origin rpy="0 0 0" xyz="0 -0.9 -0.2"/>
     <axis xyz="1 0 0"/>
-    <limit effort="50.0" lower="-2.0" upper="2.0" velocity="0.1"/>
+    <limit effort="100.0" lower="-1.5" upper="1.5" velocity="0.1"/>
     <parent link="base_link"/>
     <child link="femur_4"/>
   </joint>
 
   <joint name="femur_to_tibia_1" type="revolute">
-    <origin rpy="0 0 0" xyz="1.1 0 0"/>
+    <origin rpy="0 0 0" xyz="0.8 0 0"/>
     <axis xyz="0 1 0"/>
-    <limit effort="50.0" lower="-2.0" upper="2.0" velocity="0.1"/>
+    <limit effort="100.0" lower="-1.5" upper="1.5" velocity="0.1"/>
     <parent link="femur_1"/>
     <child link="tibia_1"/>
   </joint>
 
   <joint name="femur_to_tibia_2" type="revolute">
-    <origin rpy="0 0 0" xyz="0 1.1 0"/>
+    <origin rpy="0 0 0" xyz="0 0.8 0"/>
     <axis xyz="-1 0 0"/>
-    <limit effort="50.0" lower="-2.0" upper="2.0" velocity="0.1"/>
+    <limit effort="100.0" lower="-1.5" upper="1.5" velocity="0.1"/>
     <parent link="femur_2"/>
     <child link="tibia_2"/>
   </joint>
 
   <joint name="femur_to_tibia_3" type="revolute">
-    <origin rpy="0 0 0" xyz="-1.1 0 0"/>
+    <origin rpy="0 0 0" xyz="-0.8 0 0"/>
     <axis xyz="0 -1 0"/>
-    <limit effort="50.0" lower="-2.0" upper="2.0" velocity="0.1"/>
+    <limit effort="100.0" lower="-1.5" upper="1.5" velocity="0.1"/>
     <parent link="femur_3"/>
     <child link="tibia_3"/>
   </joint>
 
   <joint name="femur_to_tibia_4" type="revolute">
-    <origin rpy="0 0 0" xyz="0 -1.1 0"/>
+    <origin rpy="0 0 0" xyz="0 -0.8 0"/>
     <axis xyz="1 0 0"/>
-    <limit effort="50.0" lower="-2.0" upper="2.0" velocity="0.1"/>
+    <limit effort="100.0" lower="-1.5" upper="1.5" velocity="0.1"/>
     <parent link="femur_4"/>
     <child link="tibia_4"/>
   </joint>

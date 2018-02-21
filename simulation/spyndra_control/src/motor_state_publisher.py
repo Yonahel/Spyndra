@@ -10,7 +10,7 @@ from spyndra.msg import MotorSignal
 def callback(data):
     motor_signal = MotorSignal()
     motor_signal.motor_type = 1
-    motor_signal.signal = data.position
+    motor_signal.signal = [(p * 195.569759) + 512 for p in data.position]
     motor_state_publisher.publish(motor_signal)
 
 def joint_state_listener():
