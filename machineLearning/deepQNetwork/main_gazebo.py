@@ -6,23 +6,23 @@ from util_gazebo import SpyndraEnv
 def run(episode, timestep):
     for ep in range(episode):
         # initial observation
-        print "Start render and reset..."
-	env._render()
 	observation = env._reset()
 	step = 0
         print "Reset complete, Start episode %i" % ep
-        time.sleep(2)
 	for t in range(timestep):
-            # fresh env
-            #env._render()
-            # RL choose action based on observation
+            # DQN choose action based on observation
             action = RL.choose_action(observation)
 
-            # RL take action and get next observation and reward
+            # DQN take action and get next observation and reward
             observation_, reward, done = env._step(action, observation)
-	    #print "step finished"
+	    #print observation_[:18], observation_[18:36], observation_[36:54], observation_[54:72], observation_[72:]
+            
+            # Store transition into its memory
             RL.store_transition(observation, action, reward, observation_)
+  
+            # log print
             print reward, action, done#, observation_
+            
             if (step > 200) and (step % 5 == 0):
                 RL.learn()
 
@@ -38,8 +38,15 @@ def run(episode, timestep):
     # end of game
     print('game over')
 
+
 n_actions  = 24
-n_features = 38
+# one state consists of 18 dimesions
+# 0-7:   motor signal
+# 8:     action
+# 9-14:  imu data
+# 15-17: position
+# n_features = [s_t, s_t-1, s_t-2, s_t-3, s_t-4]
+n_features = 90 
 EPISODE = 100
 TIMESTEP = 1000
 
