@@ -6,16 +6,16 @@ from util_gazebo import SpyndraEnv
 def run(episode, timestep):
     for ep in range(episode):
         # initial observation
-	observation = env._reset()
-	step = 0
+        observation = env._reset()
+        step = 0
         print "Reset complete, Start episode %i" % ep
-	for t in range(timestep):
+        for t in range(timestep):
             # DQN choose action based on observation
             action = RL.choose_action(observation)
-            print(action)
+            
             # DQN take action and get next observation and reward
             observation_, reward, done = env._step(action, observation)
-	    #print observation_[:18], observation_[18:36], observation_[36:54], observation_[54:72], observation_[72:]
+	        #print observation_[:18], observation_[18:36], observation_[36:54], observation_[54:72], observation_[72:]
             
             # Store transition into its memory
             RL.store_transition(observation, action, reward, observation_)

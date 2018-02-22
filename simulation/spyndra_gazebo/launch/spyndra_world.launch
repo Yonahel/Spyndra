@@ -29,10 +29,9 @@
     command="$(find xacro)/xacro --inorder '$(find spyndra_description)/urdf/spyndra.urdf'" />
 
   <!-- Run a python script to the send a service call to gazebo_ros to spawn a URDF robot -->
-  <node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen"
-    args="-urdf -model spyndra -param robot_description -x $(arg x) -y $(arg y) -z $(arg z) -R $(arg roll) -P $(arg pitch) -Y $(arg yaw)"/>
+  <!--node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen"
+    args="-urdf -model spyndra -param robot_description -x $(arg x) -y $(arg y) -z $(arg z) -R $(arg roll) -P $(arg pitch) -Y $(arg yaw)"/-->
 
-  <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />
   <!-- ros_control spyndra launch file -->
   <!--include file="$(find spyndra_control)/launch/spyndra_control.launch" /-->
 

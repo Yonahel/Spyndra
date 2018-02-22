@@ -30,6 +30,7 @@ class SpyndraEnv(gazebo_env.GazeboEnv):
 		self.reset_proxy = rospy.ServiceProxy('/gazebo/reset_simulation', Empty)
 		print "node initiaiton finished"
 		self.reward_range = (-np.inf, np.inf)
+		self.prev_signal = []
 
 		self.START_TIME = time.time()
 		self.INIT_POS = None
@@ -58,15 +59,17 @@ class SpyndraEnv(gazebo_env.GazeboEnv):
 		except (rospy.ServiceException) as e:
 			print ("/gazebo/unpause_physics service call failed")
 
-		time.sleep(2)
 		try:
+			# Wait for robot to be ready to accept signal
+			rospy.wait_for_message('motor_state', MotorSignal, timeout=5)
+			time.sleep(.5)
 			motor_signal = MotorSignal()
 			motor_signal.motor_type = 1
-			motor_signal.signal = [512, 512, 512, 512, 768, 768, 768, 768]
+			motor_signal.signal = [512, 512, 512, 512, 820, 820, 820, 820]
 			self.action_publisher.publish(motor_signal)
+			self.prev_signal = motor_signal.signal[:]
 		except:
 			print ("cannot publish action")
-
 		time.sleep(3)
 		
 		s_ = np.zeros(90)
@@ -86,7 +89,8 @@ class SpyndraEnv(gazebo_env.GazeboEnv):
 		while motor_data is None:
 			try:
 				motor_data = rospy.wait_for_message('motor_state', MotorSignal)
-				s_[:8] = motor_data.signal
+				# s_[:8] = motor_data.signal
+				s_[:8] = self.prev_signal[:]
 			except:
 				pass
 		
@@ -142,12 +146,14 @@ class SpyndraEnv(gazebo_env.GazeboEnv):
 		try:
 			motor_signal = MotorSignal()
 			motor_signal.motor_type = 1
-			motor_signal.signal = s_[18:26]
+			# motor_signal.signal = s_[18:26]
+			motor_signal.signal = self.prev_signal[:]
 			motor_signal.signal[motor_index] += action * MOTORSTEP
 			self.action_publisher.publish(motor_signal)
+			self.prev_signal = motor_signal.signal[:]
 		except:
 			print ("cannot publish action")
-		time.sleep(.5)
+		#time.sleep(1)
 		# imu data update
 		imu_data = None
 		while imu_data is None:
@@ -165,7 +171,8 @@ class SpyndraEnv(gazebo_env.GazeboEnv):
 		#	print "Waiting for motor message..."
 			try:
 				motor_data = rospy.wait_for_message('motor_state', MotorSignal, timeout=5)
-				s_[:8] = motor_data.signal
+				# s_[8:8] = motor_data.signal
+				s_[:8] = self.prev_signal[:]
 			except:
 				pass
 		

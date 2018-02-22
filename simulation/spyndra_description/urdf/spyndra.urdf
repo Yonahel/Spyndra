@@ -68,7 +68,7 @@
     </collision>
     <inertial>
       <origin xyz="0 0 0" rpy="0 0 0"/>
-      <mass value="0.5"/>
+      <mass value="1"/>
       <inertia
         ixx="0.084981" ixy="0.000124" ixz="-0.000077"
         iyy="0.083196" iyz="-0.000128"
@@ -91,7 +91,7 @@
     </collision>
     <inertial>
       <origin rpy="0 0 0" xyz="0.4 0 0"/>
-      <mass value="0.1"/>
+      <mass value="0.2"/>
       <inertia
         ixx="0.001433" ixy="0.000000" ixz="0.000000"
         iyy="0.004311" iyz="0.000000"
@@ -114,7 +114,7 @@
     </collision>
     <inertial>
       <origin rpy="0 0 1.57075" xyz="0 0.4 0"/>
-      <mass value="0.1"/>
+      <mass value="0.2"/>
       <inertia
         ixx="0.001433" ixy="0.000000" ixz="0.000000"
         iyy="0.004311" iyz="0.000000"
@@ -137,7 +137,7 @@
     </collision>
     <inertial>
       <origin rpy="0 0 3.1415" xyz="-0.4 0 0"/>
-      <mass value="0.1"/>
+      <mass value="0.2"/>
       <inertia
         ixx="0.001433" ixy="0.000000" ixz="0.000000"
         iyy="0.004311" iyz="0.000000"
@@ -160,7 +160,7 @@
     </collision>
     <inertial>
       <origin rpy="0 0 -1.57075" xyz="0 -0.4 0"/>
-      <mass value="0.1"/>
+      <mass value="0.2"/>
       <inertia
         ixx="0.001433" ixy="0.000000" ixz="0.000000"
         iyy="0.004311" iyz="0.000000"
@@ -263,7 +263,7 @@
   <joint name="base_to_femur_1" type="revolute">
     <origin rpy="0 0 0" xyz="0.9 0 -0.2"/>
     <axis xyz="0 1 0"/>
-    <limit effort="200.0" lower="-1.5" upper="1.5" velocity="0.1"/>
+    <limit effort="1000.0" lower="-1.5" upper="1.5" velocity="0.1"/>
     <parent link="base_link"/>
     <child link="femur_1"/>
   </joint>
@@ -271,7 +271,7 @@
   <joint name="base_to_femur_2" type="revolute">
     <origin rpy="0 0 0" xyz="0 0.9 -0.2"/>
     <axis xyz="-1 0 0"/>
-    <limit effort="200.0" lower="-1.5" upper="1.5" velocity="0.1"/>
+    <limit effort="1000.0" lower="-1.5" upper="1.5" velocity="0.1"/>
     <parent link="base_link"/>
     <child link="femur_2"/>
   </joint>
@@ -279,7 +279,7 @@
   <joint name="base_to_femur_3" type="revolute">
     <origin rpy="0 0 0" xyz="-0.9 0 -0.2"/>
     <axis xyz="0 -1 0"/>
-    <limit effort="200.0" lower="-1.5" upper="1.5" velocity="0.1"/>
+    <limit effort="1000.0" lower="-1.5" upper="1.5" velocity="0.1"/>
     <parent link="base_link"/>
     <child link="femur_3"/>
   </joint>
@@ -287,7 +287,7 @@
   <joint name="base_to_femur_4" type="revolute">
     <origin rpy="0 0 0" xyz="0 -0.9 -0.2"/>
     <axis xyz="1 0 0"/>
-    <limit effort="200.0" lower="-1.5" upper="1.5" velocity="0.1"/>
+    <limit effort="1000.0" lower="-1.5" upper="1.5" velocity="0.1"/>
     <parent link="base_link"/>
     <child link="femur_4"/>
   </joint>
@@ -295,7 +295,7 @@
   <joint name="femur_to_tibia_1" type="revolute">
     <origin rpy="0 0 0" xyz="0.8 0 0"/>
     <axis xyz="0 1 0"/>
-    <limit effort="200.0" lower="-1.5" upper="1.5" velocity="0.1"/>
+    <limit effort="1000.0" lower="-1.5" upper="1.5" velocity="0.1"/>
     <parent link="femur_1"/>
     <child link="tibia_1"/>
   </joint>
@@ -303,7 +303,7 @@
   <joint name="femur_to_tibia_2" type="revolute">
     <origin rpy="0 0 0" xyz="0 0.8 0"/>
     <axis xyz="-1 0 0"/>
-    <limit effort="200.0" lower="-1.5" upper="1.5" velocity="0.1"/>
+    <limit effort="1000.0" lower="-1.5" upper="1.5" velocity="0.1"/>
     <parent link="femur_2"/>
     <child link="tibia_2"/>
   </joint>
@@ -311,7 +311,7 @@
   <joint name="femur_to_tibia_3" type="revolute">
     <origin rpy="0 0 0" xyz="-0.8 0 0"/>
     <axis xyz="0 -1 0"/>
-    <limit effort="200.0" lower="-1.5" upper="1.5" velocity="0.1"/>
+    <limit effort="1000.0" lower="-1.5" upper="1.5" velocity="0.1"/>
     <parent link="femur_3"/>
     <child link="tibia_3"/>
   </joint>
@@ -319,7 +319,7 @@
   <joint name="femur_to_tibia_4" type="revolute">
     <origin rpy="0 0 0" xyz="0 -0.8 0"/>
     <axis xyz="1 0 0"/>
-    <limit effort="200.0" lower="-1.5" upper="1.5" velocity="0.1"/>
+    <limit effort="1000.0" lower="-1.5" upper="1.5" velocity="0.1"/>
     <parent link="femur_4"/>
     <child link="tibia_4"/>
   </joint>
