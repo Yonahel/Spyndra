@@ -20,9 +20,9 @@ AX_BROADCAST_ID = 254
 
 def callback(msg):
     speed = msg.speed
-    (chassis_1, chassis_2, chassis_3, chassis_4, tibia_1,   tibia_2,   tibia_3,   tibia_4)   = msg.signal
-    
-    s = 'move motor %d to pos %d at speed %d' %(CHASSIS_1_ID, chassis_1, speed)
+    motor_id = msg.motor_id
+    output = msg.signal
+    s = 'move motor %d to pos %d at speed %d' %(motor_id, output, speed)
 
     rospy.loginfo(s)
     '''connect to 8 motors in a serial'''
@@ -31,15 +31,8 @@ def callback(msg):
 
     '''outoput signal to id and goal position, assume chassis 1-4 are assigned '''
 
-    # motors.moveSpeed(CHASSIS_1_ID, chassis_1, speed)
-    # motors.moveSpeed(CHASSIS_2_ID, chassis_2, speed)
-    # motors.moveSpeed(CHASSIS_3_ID, chassis_3, speed)
-    # motors.moveSpeed(CHASSIS_4_ID, chassis_4, speed)
+    # motors.moveSpeed(motor_id, output, speed)
 
-    # motors.moveSpeed(TIBIA_1_ID, tibia_1, speed)
-    # motors.moveSpeed(TIBIA_2_ID, tibia_2, speed)
-    # motors.moveSpeed(TIBIA_3_ID, tibia_3, speed)
-    # motors.moveSpeed(TIBIA_4_ID, tibia_4, speed)
 
     
 
