@@ -54,6 +54,16 @@ from subprocess import Popen, PIPE
 
 
 class ControlNode:
+    CHASSIS_1_ID = 1
+    CHASSIS_2_ID = 2
+    CHASSIS_3_ID = 3
+    CHASSIS_4_ID = 4
+
+    TIBIA_1_ID = 5
+    TIBIA_2_ID = 6
+    TIBIA_3_ID = 7
+    TIBIA_4_ID = 8
+
     def __init__(self):
         self.mode = 'none'
         rospy.Subscriber("/imu/data", Imu, self.imu_callback)
@@ -317,13 +327,12 @@ class ControlNode:
         # motor_id: 1-4 corresponds to chassis 1-4, 5-8 corresponds to tibia 1-4
         # speed range: 0-1023
         # output: a tuple of 8 values for each motor. range: 0-1023
-        # example: output = (1023,512,512,512,512,512,512,512)
 
         pub = rospy.Publisher("motor_signal", MotorSignal, queue_size=10)
         motor_signal = MotorSignal()
         motor_signal.speed = speed
         motor_signal.motor_id = motor_id
-        #motor_signal.signal = output
+        motor_signal.signal = output
         pub.publish(motor_signal)        
 
 
@@ -355,11 +364,11 @@ class ControlNode:
 
         # test command for ax-12
         if self.mode == 'cmd_4':
+            # example of move chassis_1 to position 512 at speed 200
             speed = 200
-            motor_id = 1
             output = 512
               # set publisher and publish computed motor signals
-            self.pubish_signal(motor_id, output, speed)
+            self.pubish_signal(ControlNode.CHASSIS_1_ID, output, speed)
             rospy.loginfo(output)
 
     def motor_output(chassis1, tibia1, chassis2, tibia2, chassis3, tibia3, chassis4, tibia4): 
