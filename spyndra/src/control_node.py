@@ -120,11 +120,16 @@ class ControlNode:
             tibiaIncrementer = startTibia
             while tibiaIncrementer > tibia_min:
                 #slowly move the tibia down
-                tib = "TIBIA_"
-                iden = "_ID"
-                tibia = tib + str(iTibia + 1) + iden
                 tibiaIncrementer = tibiaIncrementer-1
-                self.pubish_signal(tibia, tibiaIncrementer)
+                if iTibia == 0: 
+                    self.pubish_signal(TIBIA_1_ID, tibiaIncrementer)
+                if iTibia == 1: 
+                    self.pubish_signal(TIBIA_2_ID, tibiaIncrementer)
+                if iTibia == 2: 
+                    self.pubish_signal(TIBIA_3_ID, tibiaIncrementer)
+                if iTibia == 3: 
+                    self.pubish_signal(TIBIA_4_ID, tibiaIncrementer)
+                
                 next_pwm =0
                 
                 #track whether or not you've hit the ground through
@@ -251,10 +256,16 @@ class ControlNode:
             femurIncrementer = startFemur
             while femurIncrementer < chassis_max:
                 femurIncrementer = 1 + femurIncrementer
-                fem = "CHASSIS_"
-                iden = "_ID"
-                femur = tib + str(iFemur + 1) + iden
-                self.pubish_signal(femur, tibiaIncrementer)
+                
+                if iFemur == 0:
+                    self.pubish_signal(CHASSIS_1_ID, femurIncrementer)
+                if iFemur == 1:
+                    self.pubish_signal(CHASSIS_2_ID, femurIncrementer)
+                if iFemur == 2:
+                    self.pubish_signal(CHASSIS_3_ID, femurIncrementer)
+                if iFemur == 3:
+                    self.pubish_signal(CHASSIS_4_ID, femurIncrementer)
+
                 next_pwm =0
 
                 while (change_counter < change_threshold) and (not next_pwm):
