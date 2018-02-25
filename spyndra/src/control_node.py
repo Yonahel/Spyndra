@@ -39,6 +39,7 @@ import message_filters
 from std_msgs.msg import String
 from sensor_msgs.msg import Imu
 from spyndra import gaitModule
+from spyndra import vectorModule
 from spyndra.msg import MotorSignal
 
 # from BNO055 import *
@@ -83,14 +84,14 @@ class ControlNode:
         
 
         time.sleep(2)
-        self.pubish_signal(1, femur_center[0])
-        self.pubish_signal(5, startTibia)
-        self.pubish_signal(2, femur_center[1])
-        self.pubish_signal(6, startTibia)
-        self.pubish_signal(3, femur_center[2])
-        self.pubish_signal(7, startTibia)
-        self.pubish_signal(4, femur_center[3])
-        self.pubish_signal(8, startTibia)
+        self.pubish_signal(CHASSIS_1_ID, femur_center[0])
+        self.pubish_signal(TIBIA_1_ID, startTibia)
+        self.pubish_signal(CHASSIS_2_ID, femur_center[1])
+        self.pubish_signal(TIBIA_2_ID, startTibia)
+        self.pubish_signal(CHASSIS_3_ID, femur_center[2])
+        self.pubish_signal(TIBIA_3_ID, startTibia)
+        self.pubish_signal(CHASSIS_4_ID, femur_center[3])
+        self.pubish_signal(TIBIA_4_ID, startTibia)
         time.sleep(1)
 
         #store flat IMU data in zod_gyro and zod_accel
@@ -119,8 +120,11 @@ class ControlNode:
             tibiaIncrementer = startTibia
             while tibiaIncrementer > tibia_min:
                 #slowly move the tibia down
+                tib = "TIBIA_"
+                iden = "_ID"
+                tibia = tib + str(iTibia + 1) + iden
                 tibiaIncrementer = tibiaIncrementer-1
-                self.pubish_signal(iTibia+5, tibiaIncrementer)
+                self.pubish_signal(tibia, tibiaIncrementer)
                 next_pwm =0
                 
                 #track whether or not you've hit the ground through
@@ -165,14 +169,14 @@ class ControlNode:
                             
 
                 tibiaCalibrated[iTibia] = tibiaCalValue
-                self.pubish_signal(1, femur_center[0])
-                self.pubish_signal(5, startTibia)
-                self.pubish_signal(2, femur_center[1])
-                self.pubish_signal(6, startTibia)
-                self.pubish_signal(3, femur_center[2])
-                self.pubish_signal(7, startTibia)
-                self.pubish_signal(4, femur_center[3])
-                self.pubish_signal(8, startTibia)
+                self.pubish_signal(CHASSIS_1_ID, femur_center[0])
+                self.pubish_signal(TIBIA_1_ID, startTibia)
+                self.pubish_signal(CHASSIS_2_ID, femur_center[1])
+                self.pubish_signal(TIBIA_2_ID, startTibia)
+                self.pubish_signal(CHASSIS_3_ID, femur_center[2])
+                self.pubish_signal(TIBIA_3_ID, startTibia)
+                self.pubish_signal(CHASSIS_4_ID, femur_center[3])
+                self.pubish_signal(TIBIA_4_ID, startTibia)
                 time.sleep(2)
 
                 zod_matrix = flatIMUdata(bno)
@@ -213,14 +217,14 @@ class ControlNode:
     
 
         time.sleep(2)
-        self.pubish_signal(1, startFemur)
-        self.pubish_signal(5, startTibia)
-        self.pubish_signal(2, startFemur)
-        self.pubish_signal(6, startTibia)
-        self.pubish_signal(3, startFemur)
-        self.pubish_signal(7, startTibia)
-        self.pubish_signal(4, startFemur)
-        self.pubish_signal(8, startTibia)
+        self.pubish_signal(CHASSIS_1_ID, startFemur)
+        self.pubish_signal(TIBIA_1_ID, startTibia)
+        self.pubish_signal(CHASSIS_2_ID, startFemur)
+        self.pubish_signal(TIBIA_2_ID, startTibia)
+        self.pubish_signal(CHASSIS_3_ID, startFemur)
+        self.pubish_signal(TIBIA_3_ID, startTibia)
+        self.pubish_signal(CHASSIS_4_ID, startFemur)
+        self.pubish_signal(TIBIA_4_ID, startTibia)
         time.sleep(1)
 
         zod_matrix = flatIMUdata(bno)
@@ -247,7 +251,10 @@ class ControlNode:
             femurIncrementer = startFemur
             while femurIncrementer < chassis_max:
                 femurIncrementer = 1 + femurIncrementer
-                self.pubish_signal(iFemur+1, tibiaIncrementer)
+                fem = "CHASSIS_"
+                iden = "_ID"
+                femur = tib + str(iFemur + 1) + iden
+                self.pubish_signal(femur, tibiaIncrementer)
                 next_pwm =0
 
                 while (change_counter < change_threshold) and (not next_pwm):
@@ -288,14 +295,14 @@ class ControlNode:
                         
 
             femurCalibrated[iFemur] = femurCalValue
-            self.pubish_signal(1, startFemur)
-            self.pubish_signal(5, startTibia)
-            self.pubish_signal(2, startFemur)
-            self.pubish_signal(6, startTibia)
-            self.pubish_signal(3, startFemur)
-            self.pubish_signal(7, startTibia)
-            self.pubish_signal(4, startFemur)
-            self.pubish_signal(8, startTibia)
+            self.pubish_signal(CHASSIS_1_ID, startFemur)
+            self.pubish_signal(TIBIA_1_ID, startTibia)
+            self.pubish_signal(CHASSIS_2_ID, startFemur)
+            self.pubish_signal(TIBIA_2_ID, startTibia)
+            self.pubish_signal(CHASSIS_3_ID, startFemur)
+            self.pubish_signal(TIBIA_3_ID, startTibia)
+            self.pubish_signal(CHASSIS_4_ID, startFemur)
+            self.pubish_signal(TIBIA_4_ID, startTibia)
             time.sleep(2)
 
             zod_matrix = flatIMUdata(bno)
