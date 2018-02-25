@@ -43,7 +43,7 @@ def flatIMUdata(bno):
                 matrixData[flatCounter,0:2,0:3] = currentVectors
                 flatCounter= flatCounter+1
                 
-        return numpy.median(matrixData,axis=0)
+        return np.median(matrixData,axis=0)
 
 
 #calibrate all four tibias 

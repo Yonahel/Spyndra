@@ -70,44 +70,41 @@ class ControlNode:
         rospy.Subscriber("/user_cmd", String, self.user_callback)
        
 
-    def calibrateTibia(bno,femur_center):
+    def calibrateTibia(self, bno,femur_center):
+        #current observed min and max of legs
+        tibia_min = 260 #325 according to json file 
+        tibia_max = 450 #425
+        chassis_min = 225 #275
+        chassis_max = 425 #475
 
         #start tibia at high point to lower 
         startFemur = chassis_min
         startTibia = tibia_max +150
-
         
-        #motor4Femur = 370;
 
         time.sleep(2)
-        """
-        outputMotor(femur_center[0], startTibia, 0, 1)
-        outputMotor(femur_center[1], startTibia, 2, 3)  
-        outputMotor(femur_center[2], startTibia, 4, 5)
-        outputMotor(femur_center[3], startTibia, 6, 7)
-        """
-        motor_output(startFemur, startTibia, startFemur, startTibia, startFemur, startTibia, startFemur, startTibia)
+        self.pubish_signal(1, femur_center[0])
+        self.pubish_signal(5, startTibia)
+        self.pubish_signal(2, femur_center[1])
+        self.pubish_signal(6, startTibia)
+        self.pubish_signal(3, femur_center[2])
+        self.pubish_signal(7, startTibia)
+        self.pubish_signal(4, femur_center[3])
+        self.pubish_signal(8, startTibia)
         time.sleep(1)
 
         #store flat IMU data in zod_gyro and zod_accel
         zod_matrix = flatIMUdata(bno)
         zod_gyro = zod_matrix[0]
-        zod_accel = zod_matrix[1]
         print("Initial flat data (gyro and accel data):")
         print(zod_gyro) #the first vector value is perpendicular to table
         print('\n')
-        #print(zod_accel)
-        #only using roll and pitch
-        flat_gyro =zod_gyro[1:3]
-
-        maxChange= .1
+        flat_gyro =zod_gyro[1:3] #only using roll and pitch
 
 
         tibiaCalibrated = np.zeros(shape=(4,1))
         nTibia = 4 #we have 4 tibias
         tibiaCalValue = -1 #if any calibrated value is returned as -1, we've hit an error
-        previous_diff = 0
-        current_diff = 0
         delta_threshold = .05
         diff = 0
         delta =0
@@ -123,8 +120,7 @@ class ControlNode:
             while tibiaIncrementer > tibia_min:
                 #slowly move the tibia down
                 tibiaIncrementer = tibiaIncrementer-1
-                motor_output(startFemur, startTibia, startFemur, startTibia, startFemur, startTibia, startFemur, startTibia)
-                outputMotor(femur_center[iTibia],tibiaIncrementer, iTibia*2, iTibia*2+1)
+                self.pubish_signal(iTibia+5, tibiaIncrementer)
                 next_pwm =0
                 
                 #track whether or not you've hit the ground through
@@ -159,21 +155,24 @@ class ControlNode:
                         change_counter =0
 
                         tibiaCalValue = tibiaIncrementer
-                        tibiaIncrementer = tibia_min
-                                #print("gate Delta")
-                                    #femurIncrementer = chassis_max#escape the while loop
-                                    #print(np.linalg.norm(delta))
-                                    #print(delta)
+                        tibiaIncrementer = tibia_min #escape the while loop
+                        #print("gate Delta")
+                        #print(np.linalg.norm(delta))
+                        #print(delta)
                         #print(flat_gyro)
                         #print(currentVector3)
-                                            #print("calibrated!")
+                        #print("calibrated!")
                             
 
                 tibiaCalibrated[iTibia] = tibiaCalValue
-                outputMotor(femur_center[0], startTibia, 0, 1)
-                outputMotor(femur_center[1], startTibia, 2, 3)  
-                outputMotor(femur_center[2], startTibia, 4, 5)
-                outputMotor(femur_center[3], startTibia, 6, 7)
+                self.pubish_signal(1, femur_center[0])
+                self.pubish_signal(5, startTibia)
+                self.pubish_signal(2, femur_center[1])
+                self.pubish_signal(6, startTibia)
+                self.pubish_signal(3, femur_center[2])
+                self.pubish_signal(7, startTibia)
+                self.pubish_signal(4, femur_center[3])
+                self.pubish_signal(8, startTibia)
                 time.sleep(2)
 
                 zod_matrix = flatIMUdata(bno)
@@ -202,38 +201,39 @@ class ControlNode:
         return max_list,min_list
 
                     
-    def calibrateFemur(bno):
+    def calibrateFemur(self, bno):
+        #current observed min and max of legs
+        tibia_min = 260 #325 according to json file 
+        tibia_max = 450 #425
+        chassis_min = 225 #275
+        chassis_max = 425 #475
+
         startFemur = chassis_min
         startTibia = tibia_max + 175
-        #motor4Femur = 370;
+    
 
         time.sleep(2)
-
-        outputMotor(startFemur, startTibia, 0, 1)
-        outputMotor(startFemur, startTibia, 2, 3)   
-        outputMotor(startFemur, startTibia, 4, 5)
-        outputMotor(startFemur, startTibia, 6, 7)
+        self.pubish_signal(1, startFemur)
+        self.pubish_signal(5, startTibia)
+        self.pubish_signal(2, startFemur)
+        self.pubish_signal(6, startTibia)
+        self.pubish_signal(3, startFemur)
+        self.pubish_signal(7, startTibia)
+        self.pubish_signal(4, startFemur)
+        self.pubish_signal(8, startTibia)
         time.sleep(1)
 
         zod_matrix = flatIMUdata(bno)
         zod_gyro = zod_matrix[0]
-        zod_accel = zod_matrix[1]
-        print("Initial flat data (gyro and accel data):")
+        print("Initial flat data (gyro data):")
         print(zod_gyro) #the first vector value is perpendicular to table
         print('\n')
-        #print(zod_accel)
-        #only using roll and pitch
-        flat_gyro =zod_gyro[1:3]
-
-        maxChange= .1
-
+        flat_gyro =zod_gyro[1:3] #only using roll and pitch
 
 
         femurCalibrated = np.zeros(shape=(4,1))
         nFemur = 4 #we have 4 tibias
         femurCalValue = -1 #if any calibrated value is returned as -1, we've hit an error
-        previous_diff = 0
-        current_diff = 0
         delta_threshold = .05
         diff = 0
         delta =0
@@ -247,7 +247,7 @@ class ControlNode:
             femurIncrementer = startFemur
             while femurIncrementer < chassis_max:
                 femurIncrementer = 1 + femurIncrementer
-                outputMotor(femurIncrementer, startTibia, iFemur*2, iFemur*2+1)
+                self.pubish_signal(iFemur+1, tibiaIncrementer)
                 next_pwm =0
 
                 while (change_counter < change_threshold) and (not next_pwm):
@@ -278,21 +278,24 @@ class ControlNode:
                         change_counter =0
 
                         femurCalValue = femurIncrementer
-                        femurIncrementer = chassis_max
+                        femurIncrementer = chassis_max #escape while loop
                         #print("gate Delta")
-                        femurIncrementer = chassis_max#escape the while loop
                         #print(np.linalg.norm(delta))
                         #print(delta)
-                #print(flat_gyro)
-                    #print(currentVector3)
-                                        #print("calibrated!")
+                        #print(flat_gyro)
+                        #print(currentVector3)
+                        #print("calibrated!")
                         
 
             femurCalibrated[iFemur] = femurCalValue
-            outputMotor(startFemur, startTibia, 0, 1)
-            outputMotor(startFemur, startTibia, 2, 3)   
-            outputMotor(startFemur, startTibia, 4, 5)
-            outputMotor(startFemur, startTibia, 6, 7)
+            self.pubish_signal(1, startFemur)
+            self.pubish_signal(5, startTibia)
+            self.pubish_signal(2, startFemur)
+            self.pubish_signal(6, startTibia)
+            self.pubish_signal(3, startFemur)
+            self.pubish_signal(7, startTibia)
+            self.pubish_signal(4, startFemur)
+            self.pubish_signal(8, startTibia)
             time.sleep(2)
 
             zod_matrix = flatIMUdata(bno)
@@ -371,6 +374,7 @@ class ControlNode:
             self.pubish_signal(ControlNode.CHASSIS_1_ID, output, speed)
             rospy.loginfo(output)
 
+    """
     def motor_output(chassis1, tibia1, chassis2, tibia2, chassis3, tibia3, chassis4, tibia4): 
         #outputs single motor command
         pub = rospy.Publisher("motor_signal", MotorSignal, queue_size=10)
@@ -380,7 +384,7 @@ class ControlNode:
         motor_signal.tibia_1,   motor_signal.tibia_2,   motor_signal.tibia_3,   motor_signal.tibia_4 \
                          = chassis1, tibia1, chassis2, tibia2, chassis3, tibia3, chassis4, tibia4
         pub.publish(motor_signal)
-
+    """
 
 def main():
     rospy.init_node("control_node")
