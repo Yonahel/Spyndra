@@ -9,9 +9,10 @@ def run(episode, timestep):
         observation = env._reset()
         step = 0
         print "Reset complete, Start episode %i" % ep
-        for t in range(timestep):
+	for t in range(timestep):
             # DQN choose action based on observation
-            action = RL.choose_action(observation)
+            print "Episode %i, time step %i" % (ep, t)
+	    action = RL.choose_action(observation)
             
             # DQN take action and get next observation and reward
             observation_, reward, done = env._step(action, observation)
@@ -21,10 +22,9 @@ def run(episode, timestep):
             RL.store_transition(observation, action, reward, observation_)
   
             # log print
-            print reward, action, done#, observation_
             
             if (step > 200) and (step % 5 == 0):
-                RL.learn()
+		RL.learn()
 
             # swap observation
             observation = observation_

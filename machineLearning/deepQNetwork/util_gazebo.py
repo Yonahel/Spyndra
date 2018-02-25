@@ -171,7 +171,7 @@ class SpyndraEnv(gazebo_env.GazeboEnv):
 		#	print "Waiting for motor message..."
 			try:
 				motor_data = rospy.wait_for_message('motor_state', MotorSignal, timeout=5)
-				# s_[8:8] = motor_data.signal
+				#s_[8:8] = motor_data.signal
 				s_[:8] = self.prev_signal[:]
 			except:
 				pass
@@ -197,8 +197,9 @@ class SpyndraEnv(gazebo_env.GazeboEnv):
 		time_reward = 60 - .1 * (time.time() - self.START_TIME)
 		
 		# Distance reward
-		dist2goal = np.linalg.norm(np.array(s_[35:38]) - self.GOAL)
+		dist2goal = np.linalg.norm(np.array(s_[15:18]) - self.GOAL)
 		dist_reward = (self.INIT_DIST - dist2goal) * 15. / self.INIT_DIST
+                print "dist to goal:", dist2goal, "dist reward:", dist_reward, "motor signal:", s_[:8]
 		# Angel reward
 		#angl_reward = (2 * np.pi - angl2goal) * 15. / (2 * np.pi)
 
