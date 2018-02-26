@@ -25,6 +25,6 @@ if __name__ == '__main__':
     rospy.init_node('motor_state_publisher', anonymous=True)
 
     motor_state_publisher = rospy.Publisher('motor_state', MotorSignal, queue_size=5)
-
+    
     try: joint_state_listener()
     except rospy.ROSInterruptException: pass

@@ -27,7 +27,7 @@ class SpyndraEnv(gazebo_env.GazeboEnv):
 		self.action_publisher = rospy.Publisher('motor_signal', MotorSignal, queue_size=5)
 		self.unpause = rospy.ServiceProxy('/gazebo/unpause_physics', Empty)
 		self.pause = rospy.ServiceProxy('/gazebo/pause_physics', Empty)
-		self.reset_proxy = rospy.ServiceProxy('/gazebo/reset_simulation', Empty)
+		self.reset_proxy = rospy.ServiceProxy('/gazebo/reset_world', Empty)
 		print "node initiaiton finished"
 		self.reward_range = (-np.inf, np.inf)
 		self.prev_signal = []
@@ -42,15 +42,7 @@ class SpyndraEnv(gazebo_env.GazeboEnv):
 	#	self.np_random, seed = seeding.np_random(seed)
 	#	return [seed]
 
-	def _reset(self):
-		# return the initial state
-		rospy.wait_for_service('/gazebo/reset_simulation')
-		try:
-			#reset_proxy.call()
-			self.reset_proxy()
-		except (rospy.ServiceException) as e:
-			print ("/gazebo/reset_simulation service call failed")
-
+	def _reset(self):		
 		# Unpause simulation to make observation
 		rospy.wait_for_service('/gazebo/unpause_physics')
 		try:
@@ -59,10 +51,36 @@ class SpyndraEnv(gazebo_env.GazeboEnv):
 		except (rospy.ServiceException) as e:
 			print ("/gazebo/unpause_physics service call failed")
 
+		# return the initial position
+		rospy.wait_for_service('/gazebo/reset_world')
+		try:
+			#reset_proxy.call()
+			self.reset_proxy()
+		except (rospy.ServiceException) as e:
+			print ("/gazebo/reset_world service call failed")
+
 		try:
 			# Wait for robot to be ready to accept signal
 			rospy.wait_for_message('motor_state', MotorSignal, timeout=5)
-			time.sleep(.5)
+			motor_signal = MotorSignal()
+			motor_signal.motor_type = 1
+			motor_signal.signal = [512, 512, 512, 512, 512, 512, 512, 512]
+			self.action_publisher.publish(motor_signal)
+		except:
+			print ("cannot publish action")
+		time.sleep(3)
+
+		# return the initial position
+		rospy.wait_for_service('/gazebo/reset_world')
+		try:
+			#reset_proxy.call()
+			self.reset_proxy()
+		except (rospy.ServiceException) as e:
+			print ("/gazebo/reset_world service call failed")
+		
+		try:
+			# Wait for robot to be ready to accept signal
+			rospy.wait_for_message('motor_state', MotorSignal, timeout=5)
 			motor_signal = MotorSignal()
 			motor_signal.motor_type = 1
 			motor_signal.signal = [512, 512, 512, 512, 820, 820, 820, 820]
