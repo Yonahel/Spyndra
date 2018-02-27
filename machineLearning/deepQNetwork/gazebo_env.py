@@ -11,7 +11,7 @@ class GazeboEnv():
 	"""
 	metadata = {'render.modes': ['human']}
 
-	def __init__(self, launchfile):
+	def __init__(self, launchfile, headless=False):
 
 		#port = os.environ["ROS_PORT_SIM"]
 		port = "11311"
@@ -32,7 +32,10 @@ class GazeboEnv():
 		if not path.exists(fullpath):
 			raise IOError("File "+fullpath+" does not exist")
 
-		subprocess.Popen(["roslaunch","-p", port, fullpath])
+		if headless:
+			subprocess.Popen(["roslaunch","-p", port, fullpath, "world_name:=$(find spyndra_gazebo)/worlds/spyndra_rl.world", "headless:=true", "gui:=false"])
+		else:
+			subprocess.Popen(["roslaunch","-p", port, fullpath, "world_name:=$(find spyndra_gazebo)/worlds/spyndra_rl.world"])
 		print ("Gazebo launched!")
 
 		self.gzclient_pid = 0

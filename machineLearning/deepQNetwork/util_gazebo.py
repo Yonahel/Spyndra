@@ -15,7 +15,7 @@ class SpyndraEnv(gazebo_env.GazeboEnv):
 	def __init__(self):
 		# Launch the simulation with the given launchfile name
 		print "PYTHONLOG: Launching GAZEBO"
-		gazebo_env.GazeboEnv.__init__(self, "~/catkin_ws/src/spyndra_gazebo/launch/spyndra_world.launch")
+		gazebo_env.GazeboEnv.__init__(self, "~/catkin_ws/src/spyndra_gazebo/launch/spyndra_world.launch", headless=True)
 		rospy.wait_for_service('/gazebo/unpause_physics')
 		uuid = roslaunch.rlutil.get_or_generate_uuid(None, False)
 		roslaunch.configure_logging(uuid)
@@ -68,7 +68,7 @@ class SpyndraEnv(gazebo_env.GazeboEnv):
 			self.action_publisher.publish(motor_signal)
 		except:
 			print ("cannot publish action")
-		time.sleep(3)
+		time.sleep(1)
 
 		# return the initial position
 		rospy.wait_for_service('/gazebo/reset_world')
@@ -88,7 +88,7 @@ class SpyndraEnv(gazebo_env.GazeboEnv):
 			self.prev_signal = motor_signal.signal[:]
 		except:
 			print ("cannot publish action")
-		time.sleep(3)
+		time.sleep(1)
 		
 		s_ = np.zeros(90)
 		# imu data update
