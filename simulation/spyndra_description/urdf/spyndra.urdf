@@ -39,18 +39,26 @@
 
   <gazebo reference="tibia_1">
     <selfCollide>true</selfCollide>
+    <mu1>10</mu1>
+    <mu2>10</mu2>
   </gazebo>
 
   <gazebo reference="tibia_2">
     <selfCollide>true</selfCollide>
+    <mu1>10</mu1>
+    <mu2>10</mu2>
   </gazebo>
 
   <gazebo reference="tibia_3">
     <selfCollide>true</selfCollide>
+    <mu1>10</mu1>
+    <mu2>10</mu2>
   </gazebo>
 
   <gazebo reference="tibia_4">
     <selfCollide>true</selfCollide>
+    <mu1>10</mu1>
+    <mu2>10</mu2>
   </gazebo>
 
   <link name="base_link">
