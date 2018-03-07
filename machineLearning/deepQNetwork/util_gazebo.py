@@ -15,7 +15,7 @@ class SpyndraEnv(gazebo_env.GazeboEnv):
 	def __init__(self):
 		# Launch the simulation with the given launchfile name
 		print "PYTHONLOG: Launching GAZEBO"
-		gazebo_env.GazeboEnv.__init__(self, "~/catkin_ws/src/spyndra_gazebo/launch/spyndra_world.launch", headless=False)
+		gazebo_env.GazeboEnv.__init__(self, "~/catkin_ws/src/spyndra_gazebo/launch/spyndra_world.launch", gui=True)
 		rospy.wait_for_service('/gazebo/unpause_physics')
 		uuid = roslaunch.rlutil.get_or_generate_uuid(None, False)
 		roslaunch.configure_logging(uuid)
@@ -30,7 +30,6 @@ class SpyndraEnv(gazebo_env.GazeboEnv):
 		self.reset_proxy = rospy.ServiceProxy('/gazebo/reset_world', Empty)
 		print "node initiaiton finished"
 		self.reward_range = (-np.inf, np.inf)
-		self.prev_signal = []
 
 		self.START_TIME = time.time()
 		self.INIT_POS = None
@@ -85,7 +84,6 @@ class SpyndraEnv(gazebo_env.GazeboEnv):
 			motor_signal.motor_type = 1
 			motor_signal.signal = [512, 512, 512, 512, 820, 820, 820, 820]
 			self.action_publisher.publish(motor_signal)
-			self.prev_signal = motor_signal.signal[:]
 		except:
 			print ("cannot publish action")
 		time.sleep(1)
@@ -107,8 +105,7 @@ class SpyndraEnv(gazebo_env.GazeboEnv):
 		while motor_data is None:
 			try:
 				motor_data = rospy.wait_for_message('motor_state', MotorSignal)
-				# s_[:8] = motor_data.signal
-				s_[:8] = self.prev_signal[:]
+				s_[:8] = motor_data.signal
 			except:
 				pass
 		
@@ -160,15 +157,15 @@ class SpyndraEnv(gazebo_env.GazeboEnv):
 		action = (action - motor_index * 3) - 1
 		
 		# publish motor signal into Spyndra / gazebo
-		MOTORSTEP = 5
+		MOTORSTEP = 10
 		try:
 			motor_signal = MotorSignal()
 			motor_signal.motor_type = 1
 			# motor_signal.signal = s_[18:26]
-			motor_signal.signal = self.prev_signal[:]
-			motor_signal.signal[motor_index] += action * MOTORSTEP
+			# motor_signal.signal[motor_index] += action * MOTORSTEP
+			motor_signal.signal = [-1] * 8
+			motor_signal.signal[motor_index] = s_[18 + motor_index] + action * MOTORSTEP
 			self.action_publisher.publish(motor_signal)
-			self.prev_signal = motor_signal.signal[:]
 		except:
 			print ("cannot publish action")
 		#time.sleep(1)
@@ -189,8 +186,7 @@ class SpyndraEnv(gazebo_env.GazeboEnv):
 		#	print "Waiting for motor message..."
 			try:
 				motor_data = rospy.wait_for_message('motor_state', MotorSignal, timeout=5)
-				#s_[8:8] = motor_data.signal
-				s_[:8] = self.prev_signal[:]
+				s_[:8] = motor_data.signal
 			except:
 				pass
 		

@@ -63,7 +63,7 @@ if __name__ == "__main__":
                       # output_graph=True
                       )
     print "Model initialization complete"
-    env._render()
+    #env._render()
     run(EPISODE, TIMESTEP)
 
     #RL.plot_cost()

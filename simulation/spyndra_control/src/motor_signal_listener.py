@@ -9,15 +9,10 @@ from spyndra.msg import MotorSignal
 
 def callback(data):
     motor_signal = data
-    signal = [(s - 512) * 0.00511326497 for s in motor_signal.signal]
-    b2f_1.publish(signal[0])
-    b2f_2.publish(signal[1])
-    b2f_3.publish(signal[2])
-    b2f_4.publish(signal[3])
-    f2t_1.publish(signal[4])
-    f2t_2.publish(signal[5])
-    f2t_3.publish(signal[6])
-    f2t_4.publish(signal[7])
+    signal = motor_signal.signal
+    for i in range(8):
+        if signal[i] != -1:
+            ctrlrs[i].publish((signal[i] - 512) * 0.00511326497)
 
 def motor_signal_listener():
     while not rospy.is_shutdown():
@@ -29,14 +24,15 @@ def motor_signal_listener():
 #Main section of code that will continuously run unless rospy receives interuption (ie CTRL+C)
 if __name__ == '__main__':
     # Init Spyndra joint position publishers for joint controllers.
-    b2f_1 = rospy.Publisher('/spyndra/base_to_femur_1_position_controller/command', Float64, queue_size=10)
-    b2f_2 = rospy.Publisher('/spyndra/base_to_femur_2_position_controller/command', Float64, queue_size=10)
-    b2f_3 = rospy.Publisher('/spyndra/base_to_femur_3_position_controller/command', Float64, queue_size=10)
-    b2f_4 = rospy.Publisher('/spyndra/base_to_femur_4_position_controller/command', Float64, queue_size=10)
-    f2t_1 = rospy.Publisher('/spyndra/femur_to_tibia_1_position_controller/command', Float64, queue_size=10)
-    f2t_2 = rospy.Publisher('/spyndra/femur_to_tibia_2_position_controller/command', Float64, queue_size=10)
-    f2t_3 = rospy.Publisher('/spyndra/femur_to_tibia_3_position_controller/command', Float64, queue_size=10)
-    f2t_4 = rospy.Publisher('/spyndra/femur_to_tibia_4_position_controller/command', Float64, queue_size=10)
+    ctrlrs = [None] * 8
+    ctrlrs[0] = rospy.Publisher('/spyndra/base_to_femur_1_position_controller/command', Float64, queue_size=10)
+    ctrlrs[1] = rospy.Publisher('/spyndra/base_to_femur_2_position_controller/command', Float64, queue_size=10)
+    ctrlrs[2] = rospy.Publisher('/spyndra/base_to_femur_3_position_controller/command', Float64, queue_size=10)
+    ctrlrs[3] = rospy.Publisher('/spyndra/base_to_femur_4_position_controller/command', Float64, queue_size=10)
+    ctrlrs[4] = rospy.Publisher('/spyndra/femur_to_tibia_1_position_controller/command', Float64, queue_size=10)
+    ctrlrs[5] = rospy.Publisher('/spyndra/femur_to_tibia_2_position_controller/command', Float64, queue_size=10)
+    ctrlrs[6] = rospy.Publisher('/spyndra/femur_to_tibia_3_position_controller/command', Float64, queue_size=10)
+    ctrlrs[7] = rospy.Publisher('/spyndra/femur_to_tibia_4_position_controller/command', Float64, queue_size=10)
 
     rospy.init_node('motor_signal_listener', anonymous=True)
 
