@@ -11,19 +11,19 @@ def run(episode, timestep):
         print "Reset complete, Start episode %i" % ep
         for t in range(timestep):
             # DQN choose action based on observation
-            print "Episode %i, time step %i" % (ep, t)
+            #print "Episode %i, time step %i" % (ep, t)
             action = RL.choose_action(observation)
             
             # DQN take action and get next observation and reward
-            observation_, reward, done = env._step(action, observation)
+            observation_, reward, done, dist2goal = env._step(action, observation)
             #print observation_[:18], observation_[18:36], observation_[36:54], observation_[54:72], observation_[72:]
-            
+            print "Episode %3i, step %4i, dist2goal: %8.4f, reward: %8.4f" % (ep, t, dist2goal, reward), observation_[:8]
             # Store transition into its memory
             RL.store_transition(observation, action, reward, observation_)
 
             # log print
             
-            if (step > 200) and (step % 5 == 0):
+            if (step > 100) and (step % 5 == 0):
                 RL.learn()
 
             # swap observation
@@ -47,7 +47,7 @@ n_actions  = 24
 # 15-17: position
 # n_features = [s_t, s_t-1, s_t-2, s_t-3, s_t-4]
 n_features = 90 
-EPISODE = 100
+EPISODE = 1000
 TIMESTEP = 1000
 
 if __name__ == "__main__":
@@ -55,11 +55,11 @@ if __name__ == "__main__":
     env = SpyndraEnv()
     print "Start model initialization..."
     RL = DeepQNetwork(n_actions, n_features,
-                      learning_rate=0.01,
+                      learning_rate=0.1,
                       reward_decay=0.9,
                       e_greedy=0.9,
                       replace_target_iter=200,
-                      memory_size=2000,
+                      memory_size=4000,
                       # output_graph=True
                       )
     print "Model initialization complete"

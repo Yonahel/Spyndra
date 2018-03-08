@@ -64,8 +64,8 @@ class DeepQNetwork:
 		with tf.variable_scope('eval_net'):
 			# c_names(collections_names) are the collections to store variables
 			c_names, n_l1, n_l2, w_initializer, b_initializer = \
-				['eval_net_params', tf.GraphKeys.GLOBAL_VARIABLES], 128, 128,\
-				tf.random_normal_initializer(0., 0.3), tf.constant_initializer(0.1)  # config of layers
+				['eval_net_params', tf.GraphKeys.GLOBAL_VARIABLES], 256, 256,\
+				tf.random_normal_initializer(0., 0.03), tf.constant_initializer(0.01)  # config of layers
 
 			# first layer. collections is used later when assign to target net
 			with tf.variable_scope('l1'):
@@ -90,7 +90,7 @@ class DeepQNetwork:
 			self.loss = tf.reduce_mean(self.huber_loss)
 			#self.loss = tf.reduce_mean(tf.squared_difference(self.q_target, self.q_eval))
 		with tf.variable_scope('train'):
-			self._train_op = tf.train.RMSPropOptimizer(self.lr).minimize(self.loss)
+			self._train_op = tf.train.AdamOptimizer(self.lr).minimize(self.loss)
 
 		# ------------------ build target_net ------------------
 		self.s_ = tf.placeholder(tf.float32, [None, self.n_features], name='s_')    # input
@@ -127,6 +127,17 @@ class DeepQNetwork:
 		self.memory[index, :] = transition
 
 		self.memory_counter += 1
+	
+	def check_feasible(self, observation, actions):
+		for action in actions:
+			motor_idx = action / 3
+			motor_del = (action % 3 - 1) * 5
+			new_val = observation[motor_idx] + motor_del
+			if new_val < 0 or new_val > 1024:
+				continue
+			else:
+				break
+		return action
 
 	def choose_action(self, observation):
 		# For Spyndra, we treat actions as specifying a change in joint anble by a fixed value.
@@ -136,13 +147,14 @@ class DeepQNetwork:
 		
 		# to have batch dimension when feed into tf placeholder
 		observation = observation[np.newaxis, :]
-
 		if np.random.uniform() < self.epsilon:
 			# forward feed the observation and get q value for every actions
 			actions_value = self.sess.run(self.q_eval, feed_dict={self.s: observation})
-			action = np.argmax(actions_value)
+			actions = np.argsort(actions_value)[0][::-1]
+			action = self.check_feasible(observation[0], actions)
 		else:
-			action = np.random.randint(0, self.n_actions) 
+			actions = np.random.permutation(24)
+			action = self.check_feasible(observation[0], actions)
 		return action
 
 	def learn(self):
