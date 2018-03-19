@@ -38,9 +38,9 @@ import rospy
 import message_filters
 from std_msgs.msg import String
 from sensor_msgs.msg import Imu
-from spyndra import gaitModule
 from spyndra import vectorModule
 from spyndra.msg import MotorSignal
+from spyndra.msg import BeaconPos
 
 # from BNO055 import *
 # import Adafruit_PCA9685
@@ -50,6 +50,7 @@ import numpy as np
 import time
 import csv
 import getch
+import math
 from subprocess import Popen, PIPE
 
 
@@ -69,6 +70,7 @@ class ControlNode:
         self.mode = 'none'
         rospy.Subscriber("/imu/data", Imu, self.imu_callback)
         rospy.Subscriber("/user_cmd", String, self.user_callback)
+        rospy.Subscriber("/gps/data", BeaconPos, self.gps_callback)
        
 
     def calibrateTibia(self, bno,femur_center):
@@ -357,9 +359,14 @@ class ControlNode:
         pub.publish(motor_signal)        
 
 
+    '''
+    --------------------call back functions-------------------------------
+    '''
+
+    # called when imu sensor returns data
     def imu_callback(self, imu):
         # when bno055.py node is spinning, imu data is packed in imu variable
-        s = 'current mode: ' + str(self.mode)
+        s = 'received imu data, current mode: ' + str(self.mode)
         rospy.loginfo(s)
 
         # control node may neet to subscribe IMU data and feed them into RL models for action genetaion
@@ -368,41 +375,37 @@ class ControlNode:
         # euler   = msg.angular_velocity.x, msg.angular_velocity.y, msg.angular_velocity.z        
 
         # take action based on subscribed msg "/user_cmd"
-        # "cmd_1", "cmd_2" can be further customized, these are now under development
         chassis, tibia = [], []
         if self.mode == 'cmd_0':
             # calibration section
+
             pass
         else: 
             pass
 
-
+    # called when user types a command in the user node
     def user_callback(self, user_input):
-        # when user types command to the user.py node, user_callback is run
         self.mode = user_input.data
         s = 'mode set to be:'+ str(user_input)
         rospy.loginfo(s)
 
-        # test command for ax-12
+        # test command for moving ax-12
         if self.mode == 'cmd_4':
             # example of move chassis_1 to position 512 at speed 200
             speed = 200
             output = 512
-              # set publisher and publish computed motor signals
+            # set publisher and publish computed motor signals
             self.pubish_signal(ControlNode.CHASSIS_1_ID, output, speed)
             rospy.loginfo(output)
 
-    """
-    def motor_output(chassis1, tibia1, chassis2, tibia2, chassis3, tibia3, chassis4, tibia4): 
-        #outputs single motor command
-        pub = rospy.Publisher("motor_signal", MotorSignal, queue_size=10)
-        motor_signal = MotorSignal()
-        motor_signal.motor_type = motor_type
-        motor_signal.chassis_1, motor_signal.chassis_2, motor_signal.chassis_3, motor_signal.chassis_4, \
-        motor_signal.tibia_1,   motor_signal.tibia_2,   motor_signal.tibia_3,   motor_signal.tibia_4 \
-                         = chassis1, tibia1, chassis2, tibia2, chassis3, tibia3, chassis4, tibia4
-        pub.publish(motor_signal)
-    """
+    # called when user types a command in the user node
+    def gps_callback(self, gps_pos):
+        log_msg = 'heard: ' + str(gps_pos) + '\n'
+        distance_3d = math.sqrt(gps_pos.x_m**2 + gps_pos.y_m**2 + gps_pos.z_m**2)
+        distance_2d = math.sqrt(gps_pos.x_m**2 + gps_pos.y_m**2)
+        log_msg += 'distance in 2d: ' + str(distance_2d)+ '\n'
+        log_msg += 'distance in 3d: ' + str(distance_3d)+ '\n'
+        rospy.loginfo(log_msg)
 
 def main():
     rospy.init_node("control_node")
