@@ -15,7 +15,7 @@ class SpyndraEnv(gazebo_env.GazeboEnv):
 	def __init__(self):
 		# Launch the simulation with the given launchfile name
 		print "PYTHONLOG: Launching GAZEBO"
-		gazebo_env.GazeboEnv.__init__(self, "~/catkin_ws/src/spyndra_gazebo/launch/spyndra_world.launch")
+		gazebo_env.GazeboEnv.__init__(self, "~/catkin_ws/src/spyndra_gazebo/launch/spyndra_world.launch", gui=True)
 		rospy.wait_for_service('/gazebo/unpause_physics')
 		uuid = roslaunch.rlutil.get_or_generate_uuid(None, False)
 		roslaunch.configure_logging(uuid)
@@ -27,7 +27,7 @@ class SpyndraEnv(gazebo_env.GazeboEnv):
 		self.action_publisher = rospy.Publisher('motor_signal', MotorSignal, queue_size=5)
 		self.unpause = rospy.ServiceProxy('/gazebo/unpause_physics', Empty)
 		self.pause = rospy.ServiceProxy('/gazebo/pause_physics', Empty)
-		self.reset_proxy = rospy.ServiceProxy('/gazebo/reset_simulation', Empty)
+		self.reset_proxy = rospy.ServiceProxy('/gazebo/reset_world', Empty)
 		print "node initiaiton finished"
 		self.reward_range = (-np.inf, np.inf)
 
@@ -41,15 +41,7 @@ class SpyndraEnv(gazebo_env.GazeboEnv):
 	#	self.np_random, seed = seeding.np_random(seed)
 	#	return [seed]
 
-	def _reset(self):
-		# return the initial state
-		rospy.wait_for_service('/gazebo/reset_simulation')
-		try:
-			#reset_proxy.call()
-			self.reset_proxy()
-		except (rospy.ServiceException) as e:
-			print ("/gazebo/reset_simulation service call failed")
-		
+	def _reset(self):		
 		# Unpause simulation to make observation
 		rospy.wait_for_service('/gazebo/unpause_physics')
 		try:
@@ -57,14 +49,52 @@ class SpyndraEnv(gazebo_env.GazeboEnv):
 			self.unpause()
 		except (rospy.ServiceException) as e:
 			print ("/gazebo/unpause_physics service call failed")
+
+		# return the initial position
+		rospy.wait_for_service('/gazebo/reset_world')
+		try:
+			#reset_proxy.call()
+			self.reset_proxy()
+		except (rospy.ServiceException) as e:
+			print ("/gazebo/reset_world service call failed")
+
+		try:
+			# Wait for robot to be ready to accept signal
+			rospy.wait_for_message('motor_state', MotorSignal, timeout=5)
+			motor_signal = MotorSignal()
+			motor_signal.motor_type = 1
+			motor_signal.signal = [512, 512, 512, 512, 512, 512, 512, 512]
+			self.action_publisher.publish(motor_signal)
+		except:
+			print ("cannot publish action")
+		time.sleep(1)
+
+		# return the initial position
+		rospy.wait_for_service('/gazebo/reset_world')
+		try:
+			#reset_proxy.call()
+			self.reset_proxy()
+		except (rospy.ServiceException) as e:
+			print ("/gazebo/reset_world service call failed")
 		
-		s_ = np.zeros(38)
+		try:
+			# Wait for robot to be ready to accept signal
+			rospy.wait_for_message('motor_state', MotorSignal, timeout=5)
+			motor_signal = MotorSignal()
+			motor_signal.motor_type = 1
+			motor_signal.signal = [512, 512, 512, 512, 820, 820, 820, 820]
+			self.action_publisher.publish(motor_signal)
+		except:
+			print ("cannot publish action")
+		time.sleep(1)
+		
+		s_ = np.zeros(90)
 		# imu data update
 		imu_data = None
 		while imu_data is None:
 			try:
 				imu_data = rospy.wait_for_message('imu', Imu)
-				s_[29:35] = [imu_data.linear_acceleration.x, imu_data.linear_acceleration.y, imu_data.linear_acceleration.z, \
+				s_[9: 15] = [imu_data.linear_acceleration.x, imu_data.linear_acceleration.y, imu_data.linear_acceleration.z, \
 							 imu_data.angular_velocity.x,    imu_data.angular_velocity.y,    imu_data.angular_velocity.z]
 			except:
 				pass
@@ -75,7 +105,7 @@ class SpyndraEnv(gazebo_env.GazeboEnv):
 		while motor_data is None:
 			try:
 				motor_data = rospy.wait_for_message('motor_state', MotorSignal)
-				s_[:8] = motor_data
+				s_[:8] = motor_data.signal
 			except:
 				pass
 		
@@ -86,10 +116,10 @@ class SpyndraEnv(gazebo_env.GazeboEnv):
 			try:
 				position_data = rospy.wait_for_message('/gazebo/model_states', ModelStates, timeout=5)
 				index = position_data.name.index("spyndra")
-				s_[35:38] = [position_data.pose[index].position.x, position_data.pose[index].position.y, position_data.pose[index].position.y]
-				self.INIT_POS = np.array(s_[35:38])
+				s_[15: 18] = [position_data.pose[index].position.x, position_data.pose[index].position.y, position_data.pose[index].position.y]
+				self.INIT_POS = np.array(s_[15: 18])
 				self.GOAL = np.array(self.INIT_POS, copy=True)
-				self.GOAL[0] += 100
+				self.GOAL[0] += 10
 				self.INIT_DIST = np.linalg.norm(self.INIT_POS - self.GOAL)
 			except:
 				pass
@@ -113,50 +143,56 @@ class SpyndraEnv(gazebo_env.GazeboEnv):
 		except (rospy.ServiceException) as e:
 				print ("/gazebo/unpause_physics service call failed")
 	
-	
+		
 		s_ = s.copy()
-		motor_index = action / 3 
+		
+		# update previous state
+		s_ = np.hstack((np.zeros(18), s_[ :-18]))
+                # store action into state
+                s[:8] = s_[18: 26] + np.array(action).astype(int)
+
+                # parse action to motor signal
+		#motor_index = action / 3 
 		# action = 0(decrease by MOTORSTEP), 1(maintain), 1(increase by MOTORSTEP)
-		action = (action - motor_index * 3) - 1
+		#action = (action - motor_index * 3) - 1
 		
 		# publish motor signal into Spyndra / gazebo
-		MOTORSTEP = 5
+		#MOTORSTEP = 10
 		try:
 			motor_signal = MotorSignal()
 			motor_signal.motor_type = 1
-			motor_signal.signal = s_[:8]
-			motor_signal.signal[motor_index] += action * MOTORSTEP
+			# motor_signal.signal = s_[18:26]
+			# motor_signal.signal[motor_index] += action * MOTORSTEP
+			#motor_signal.signal = [-1] * 8
+			motor_signal.signal = s_[18: 26] + np.array(action).astype(int)
+			#print "1", motor_signal.signal
 			self.action_publisher.publish(motor_signal)
 		except:
 			print ("cannot publish action")
-		#print "action published..."
-		# update the observation based on new action
-		# last 5 actions update (shift right)
-		s_[24: 29] = np.hstack((action, s_[24:28]))
 		
+		#print action
+		#time.sleep(1)
 		# imu data update
 		imu_data = None
 		while imu_data is None:
 		#	print "Waiting for IMU message..."
 			try:
 				imu_data = rospy.wait_for_message('imu', Imu, timeout=5)
-				s_[29:35] = [imu_data.linear_acceleration.x, imu_data.linear_acceleration.y, imu_data.linear_acceleration.z, \
+				s_[9: 15] = [imu_data.linear_acceleration.x, imu_data.linear_acceleration.y, imu_data.linear_acceleration.z, \
 							 imu_data.angular_velocity.x,    imu_data.angular_velocity.y,    imu_data.angular_velocity.z]
 			except:
 				pass
-		# TODO: Parse imu_data
-		#print imu_data	
-		# motor data update
+		
+                # motor data update
 		motor_data = None
+		#while sum(abs(motor_data - motor_signal.signal)) > 6:
 		while motor_data is None:
 		#	print "Waiting for motor message..."
 			try:
 				motor_data = rospy.wait_for_message('motor_state', MotorSignal, timeout=5)
-				s_[:8] = motor_data
+				s_[:8] = motor_data.signal
 			except:
 				pass
-		#print motor_data
-
 		# position data update
 		position_data = None
 		while position_data is None:
@@ -164,35 +200,36 @@ class SpyndraEnv(gazebo_env.GazeboEnv):
 			try:
 				position_data = rospy.wait_for_message('/gazebo/model_states', ModelStates, timeout=5)
 				index = position_data.name.index("spyndra")
-				s_[35:38] = [position_data.pose[index].position.x, position_data.pose[index].position.y, position_data.pose[index].position.y]
+				s_[15: 18] = [position_data.pose[index].position.x, position_data.pose[index].position.y, position_data.pose[index].position.y]
 			except:
 				pass
-		#print position_data
-		
+
 		rospy.wait_for_service('/gazebo/pause_physics')
 		try:
 			self.pause()
 		except (rospy.ServiceException) as e:
 			print ("/gazebo/pause_physics service call failed")
 
-
 		# Time reward
-		time_reward = 60 - .1 * (time.time() - self.START_TIME)
-		
+		#time_reward = 60 - .1 * (time.time() - self.START_TIME)
+		time_reward = 0.
 		# Distance reward
-		dist2goal = np.linalg.norm(np.array(s_[35:38]) - self.GOAL)
-		dist_reward = (self.INIT_DIST - dist2goal) * 15. / self.INIT_DIST
+		prev_dist2goal = np.linalg.norm(np.array(s_[33:36]) - self.GOAL)
+		curr_dist2goal = np.linalg.norm(np.array(s_[15:18]) - self.GOAL)
+		#dist_reward = 1 if (curr_dist2goal - prev_dist2goal) < 0 else 0
+		dist_reward = (self.INIT_DIST - curr_dist2goal) * 15. / self.INIT_DIST
+                #print "dist to goal:", curr_dist2goal, "dist reward:", dist_reward, "motor signal:", s_[:8]
 		# Angel reward
 		#angl_reward = (2 * np.pi - angl2goal) * 15. / (2 * np.pi)
 
 		# euclidean norm of accleration
-		reward = time_reward * 2 + dist_reward #+ angl_reward
+		reward = time_reward + dist_reward * 5 #+ angl_reward
 	
 		# threshold TBD
-		if dist_reward == 15:
+		if curr_dist2goal < 1:
 			done = True
 		else:
 			done = False
 	
-		return s_, reward, done
+		return s_, reward, done, curr_dist2goal
 	
