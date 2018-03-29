@@ -127,6 +127,7 @@ class SpyndraEnv(gazebo_env.GazeboEnv):
         except (rospy.ServiceException) as e:
             print ("/gazebo/pause_physics service call failed")
 
+        self.START_TIME = time.time()
         return s_
 
     def _step(self, action, s):
@@ -193,8 +194,8 @@ class SpyndraEnv(gazebo_env.GazeboEnv):
 
         # Reward Function
         ## Time reward
-        #time_reward = 60 - .1 * (time.time() - self.START_TIME)
-        time_reward = 0.
+        time_reward = 10 - .2 * (time.time() - self.START_TIME)
+        #time_reward = 0.
         
         ## Distance reward
         curr_dist2goal = np.linalg.norm(np.array(s_[14:17]) - self.GOAL)

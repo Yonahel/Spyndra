@@ -12,22 +12,23 @@ from spyndra_env import SpyndraEnv
 OUTPUT_GRAPH = True
 LOG_DIR = './log'
 N_WORKERS = 1# multiprocessing.cpu_count()
-MAX_EP_STEP = 200
-MAX_GLOBAL_EP = 2000
+MAX_EP_STEP = 2000
+MAX_GLOBAL_EP = 1000
 GLOBAL_NET_SCOPE = 'Global_Net'
 UPDATE_GLOBAL_ITER = 10
 GAMMA = 0.9
 ENTROPY_BETA = 0.01
-LR_A = 0.0001    # learning rate for actor
+LR_A = 0.0001   # learning rate for actor
 LR_C = 0.001    # learning rate for critic
 GLOBAL_RUNNING_R = []
 GLOBAL_EP = 0
 n_HA = 32
 n_HC = 32
+n_previous_state = 0
 
-N_S = 90#env.observation_space.shape[0]
-N_A = 8#env.action_space.shape[0]
-A_BOUND = [-20, 20]#[env.action_space.low, env.action_space.high]
+N_S = 17 * (1+n_previous_state)
+N_A = 8
+A_BOUND = [-5, 5]#[env.action_space.low, env.action_space.high]
 
 
 class ACNet(object):
@@ -87,21 +88,21 @@ class ACNet(object):
         with tf.variable_scope('actor'):
             l_a1 = tf.layers.dense(self.s, n_HA, tf.nn.relu6, kernel_initializer=w_init, name='la1')
             l_a2 = tf.layers.dense(l_a1, n_HA, tf.nn.relu6, kernel_initializer=w_init, name='la2')
-	    l_a3 = tf.layers.dense(l_a2, n_HA, tf.nn.relu6, kernel_initializer=w_init, name='la3')
-	    mu = tf.layers.dense(l_a3, N_A, tf.nn.tanh, kernel_initializer=w_init, name='mu')
+            l_a3 = tf.layers.dense(l_a2, n_HA, tf.nn.relu6, kernel_initializer=w_init, name='la3')
+            mu = tf.layers.dense(l_a3, N_A, tf.nn.tanh, kernel_initializer=w_init, name='mu')
             sigma = tf.layers.dense(l_a3, N_A, tf.nn.softplus, kernel_initializer=w_init, name='sigma')
         with tf.variable_scope('critic'):
             l_c1 = tf.layers.dense(self.s, n_HC, tf.nn.relu6, kernel_initializer=w_init, name='lc1')
             l_c2 = tf.layers.dense(l_c1, n_HC, tf.nn.relu6, kernel_initializer=w_init, name='lc2')
-	    l_c3 = tf.layers.dense(l_c2, n_HC, tf.nn.relu6, kernel_initializer=w_init, name='lc3')
-	    v = tf.layers.dense(l_c3, 1, kernel_initializer=w_init, name='v')  # state value
+            l_c3 = tf.layers.dense(l_c2, n_HC, tf.nn.relu6, kernel_initializer=w_init, name='lc3')
+            v = tf.layers.dense(l_c3, 1, kernel_initializer=w_init, name='v')  # state value
         a_params = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope=scope + '/actor')
         c_params = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope=scope + '/critic')
         return mu, sigma, v, a_params, c_params
 
     def update_global(self, feed_dict):  # run by a local
         #print "update global net"
-	SESS.run([self.update_a_op, self.update_c_op], feed_dict)  # local grads applies to global net
+        SESS.run([self.update_a_op, self.update_c_op], feed_dict)  # local grads applies to global net
 
     def pull_global(self):  # run by a local
         SESS.run([self.pull_a_params_op, self.pull_c_params_op])
@@ -129,15 +130,15 @@ class Worker(object):
                 # if self.name == 'W_0':
                 #     self.env.render()
                 a = self.AC.choose_action(s)
-	        s_, r, done, info = self.env._step(a, s)
-                #done = True if ep_t == MAX_EP_STEP - 1 else False
-		if self.name == 'W_0':
-		#	pass
-			print()
-			print("distance to goal=", info, "reward=", r)
-			print("position before action=", list(s_[17:25]))
-			print("action=",list(a))
-			print("position after  action=", list(s_[:8]))
+                s_, r, done, info = self.env._step(a, s)
+                    #done = True if ep_t == MAX_EP_STEP - 1 else False
+                if self.name == 'W_0':
+                    print("Ep %4i, step %4i" % (GLOBAL_EP, ep_t))
+                    print("distance to goal=", info, "reward=", r)
+                    print("position before action=", list(s_[17:25]))
+                    print("action=",list(a))
+                    print("position after  action=", list(s_[:8]))
+                
                 ep_r += r
                 buffer_s.append(s)
                 buffer_a.append(a)
@@ -176,8 +177,8 @@ class Worker(object):
                         "Ep:", GLOBAL_EP,
                         "| Ep_r: %i" % GLOBAL_RUNNING_R[-1],
                           )
-                    GLOBAL_EP += 1
                     break
+            GLOBAL_EP += 1
 
 if __name__ == "__main__":
     SESS = tf.Session()
