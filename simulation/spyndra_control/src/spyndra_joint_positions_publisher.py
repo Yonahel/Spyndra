@@ -5,6 +5,7 @@ import sys
 import time
 
 from std_msgs.msg import Float64
+from spyndra.msg import MotorSignal 
 
 #For testing gaits
 
@@ -25,19 +26,26 @@ def spyndra_joint_positions_publisher():
     f2t_3 = rospy.Publisher('/spyndra/femur_to_tibia_3_position_controller/command', Float64, queue_size=10)
     f2t_4 = rospy.Publisher('/spyndra/femur_to_tibia_4_position_controller/command', Float64, queue_size=10)
 
+    action_publisher = rospy.Publisher('motor_signal', MotorSignal, queue_size=5)
+
     rate = rospy.Rate(10) # 10hz
     while not rospy.is_shutdown():
         line = sys.stdin.readline()
         pos = [float(p) for p in line.split()]
 
-        b2f_1.publish(pos[0])
-        b2f_2.publish(pos[1])
-        b2f_3.publish(pos[2])
-        b2f_4.publish(pos[3])
-        f2t_1.publish(pos[4])
-        f2t_2.publish(pos[5])
-        f2t_3.publish(pos[6])
-        f2t_4.publish(pos[7])
+        motor_signal = MotorSignal()
+        motor_signal.motor_type = 1
+        motor_signal.signal = pos[:8]
+        action_publisher.publish(motor_signal)
+
+        # b2f_1.publish(pos[0])
+        # b2f_2.publish(pos[1])
+        # b2f_3.publish(pos[2])
+        # b2f_4.publish(pos[3])
+        # f2t_1.publish(pos[4])
+        # f2t_2.publish(pos[5])
+        # f2t_3.publish(pos[6])
+        # f2t_4.publish(pos[7])
         
         rate.sleep()
 

@@ -7,7 +7,8 @@ import time
 from std_srvs.srv import Empty
 from spyndra.msg import MotorSignal
 from sensor_msgs.msg import Imu
-from gazebo_msgs.msg import ModelStates
+from gazebo_msgs.msg import ModelStates, ModelState
+from gazebo_msgs.srv import SetModelState, SetModelConfiguration
 import sys
 
 
@@ -21,6 +22,7 @@ class SpyndraEnv(gazebo_env.GazeboEnv):
 		roslaunch.configure_logging(uuid)
 		launch = roslaunch.parent.ROSLaunchParent(uuid, [os.path.expanduser('~') + "/catkin_ws/src/spyndra_control/launch/spyndra_control.launch"])
 		launch.start()
+		time.sleep(.5)
 		print "PYTHONLOG: Launch finished. Start node initiation"
 		rospy.init_node('spyndra_env', anonymous=True)
 
@@ -28,6 +30,8 @@ class SpyndraEnv(gazebo_env.GazeboEnv):
 		self.unpause = rospy.ServiceProxy('/gazebo/unpause_physics', Empty)
 		self.pause = rospy.ServiceProxy('/gazebo/pause_physics', Empty)
 		self.reset_proxy = rospy.ServiceProxy('/gazebo/reset_world', Empty)
+		self.set_model_state_proxy = rospy.ServiceProxy('/gazebo/set_model_state', SetModelState)
+		self.set_model_config_proxy = rospy.ServiceProxy('/gazebo/set_model_configuration', SetModelConfiguration)
 		print "node initiaiton finished"
 		self.reward_range = (-np.inf, np.inf)
 
@@ -50,33 +54,29 @@ class SpyndraEnv(gazebo_env.GazeboEnv):
 		except (rospy.ServiceException) as e:
 			print ("/gazebo/unpause_physics service call failed")
 
-		# return the initial position
-		rospy.wait_for_service('/gazebo/reset_world')
-		try:
-			#reset_proxy.call()
-			self.reset_proxy()
-		except (rospy.ServiceException) as e:
-			print ("/gazebo/reset_world service call failed")
 
+		# return to initial joint positions
+		rospy.wait_for_service('/gazebo/set_model_configuration')
 		try:
-			# Wait for robot to be ready to accept signal
-			rospy.wait_for_message('motor_state', MotorSignal, timeout=5)
-			motor_signal = MotorSignal()
-			motor_signal.motor_type = 1
-			motor_signal.signal = [512, 512, 512, 512, 512, 512, 512, 512]
-			self.action_publisher.publish(motor_signal)
-		except:
-			print ("cannot publish action")
+			joint_names = ['base_to_femur_1', 'base_to_femur_2', 'base_to_femur_3', 'base_to_femur_4', 'femur_to_tibia_1', 'femur_to_tibia_2', 'femur_to_tibia_3', 'femur_to_tibia_4']
+			joint_positions = [0, 0, 0, 0, 0, 0, 0, 0]
+			self.set_model_config_proxy('spyndra', 'spyndra_description', joint_names, joint_positions)
+		except (rospy.ServiceException) as e:
+			print ("/gazebo/set_model_configuration service call failed")
+		time.sleep(.5)
+
+		# return to initial model position
+		rospy.wait_for_service('/gazebo/set_model_state')
+		try:
+			model_state = ModelState()
+			model_state.model_name = 'spyndra'
+			model_state.pose.position.z = 0.5
+			self.set_model_state_proxy(model_state)
+		except (rospy.ServiceException) as e:
+			print ("/gazebo/set_model_state service call failed")
 		time.sleep(1)
 
-		# return the initial position
-		rospy.wait_for_service('/gazebo/reset_world')
-		try:
-			#reset_proxy.call()
-			self.reset_proxy()
-		except (rospy.ServiceException) as e:
-			print ("/gazebo/reset_world service call failed")
-		
+		# stand up
 		try:
 			# Wait for robot to be ready to accept signal
 			rospy.wait_for_message('motor_state', MotorSignal, timeout=5)
@@ -86,7 +86,7 @@ class SpyndraEnv(gazebo_env.GazeboEnv):
 			self.action_publisher.publish(motor_signal)
 		except:
 			print ("cannot publish action")
-		time.sleep(1)
+		time.sleep(2)
 		
 		s_ = np.zeros(90)
 		# imu data update
@@ -157,7 +157,7 @@ class SpyndraEnv(gazebo_env.GazeboEnv):
 		action = (action - motor_index * 3) - 1
 		
 		# publish motor signal into Spyndra / gazebo
-		MOTORSTEP = 10
+		MOTORSTEP = 5
 		try:
 			motor_signal = MotorSignal()
 			motor_signal.motor_type = 1

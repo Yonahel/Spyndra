@@ -25,7 +25,7 @@ def run(episode, timestep):
             
             if (step > 200) and (step % 5 == 0):
                 RL.learn()
-
+            
             # swap observation
             observation = observation_
 

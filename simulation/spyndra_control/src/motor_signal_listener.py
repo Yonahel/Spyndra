@@ -17,7 +17,7 @@ def callback(data):
 def motor_signal_listener():
     while not rospy.is_shutdown():
         rospy.Subscriber("motor_signal", MotorSignal, callback)
-
+        
         # spin() simply keeps python from exiting until this node is stopped
         rospy.spin()
 

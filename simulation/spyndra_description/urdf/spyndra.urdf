@@ -23,50 +23,34 @@
 
   <gazebo reference="femur_1">
     <selfCollide>true</selfCollide>
-    <mu1>10000</mu1>
-    <mu2>10000</mu2>
   </gazebo>
 
   <gazebo reference="femur_2">
     <selfCollide>true</selfCollide>
-    <mu1>10000</mu1>
-    <mu2>10000</mu2>
   </gazebo>
 
   <gazebo reference="femur_3">
     <selfCollide>true</selfCollide>
-    <mu1>10000</mu1>
-    <mu2>10000</mu2>
   </gazebo>
 
   <gazebo reference="femur_4">
     <selfCollide>true</selfCollide>
-    <mu1>10000</mu1>
-    <mu2>10000</mu2>
   </gazebo>
 
   <gazebo reference="tibia_1">
     <selfCollide>true</selfCollide>
-    <mu1>10000</mu1>
-    <mu2>10000</mu2>
   </gazebo>
 
   <gazebo reference="tibia_2">
     <selfCollide>true</selfCollide>
-    <mu1>10000</mu1>
-    <mu2>10000</mu2>
   </gazebo>
 
   <gazebo reference="tibia_3">
     <selfCollide>true</selfCollide>
-    <mu1>10000</mu1>
-    <mu2>10000</mu2>
   </gazebo>
 
   <gazebo reference="tibia_4">
     <selfCollide>true</selfCollide>
-    <mu1>10000</mu1>
-    <mu2>10000</mu2>
   </gazebo>
 
   <link name="base_link">
@@ -279,7 +263,7 @@
   <joint name="base_to_femur_1" type="revolute">
     <origin rpy="0 0 0" xyz="0.9 0 -0.2"/>
     <axis xyz="0 1 0"/>
-    <limit effort="1000.0" lower="-1.5" upper="1.5" velocity="0.1"/>
+    <limit effort="1000.0" lower="-3" upper="3" velocity="1"/>
     <parent link="base_link"/>
     <child link="femur_1"/>
   </joint>
@@ -287,7 +271,7 @@
   <joint name="base_to_femur_2" type="revolute">
     <origin rpy="0 0 0" xyz="0 0.9 -0.2"/>
     <axis xyz="-1 0 0"/>
-    <limit effort="1000.0" lower="-1.5" upper="1.5" velocity="0.1"/>
+    <limit effort="1000.0" lower="-3" upper="3" velocity="1"/>
     <parent link="base_link"/>
     <child link="femur_2"/>
   </joint>
@@ -295,7 +279,7 @@
   <joint name="base_to_femur_3" type="revolute">
     <origin rpy="0 0 0" xyz="-0.9 0 -0.2"/>
     <axis xyz="0 -1 0"/>
-    <limit effort="1000.0" lower="-1.5" upper="1.5" velocity="0.1"/>
+    <limit effort="1000.0" lower="-3" upper="3" velocity="1"/>
     <parent link="base_link"/>
     <child link="femur_3"/>
   </joint>
@@ -303,7 +287,7 @@
   <joint name="base_to_femur_4" type="revolute">
     <origin rpy="0 0 0" xyz="0 -0.9 -0.2"/>
     <axis xyz="1 0 0"/>
-    <limit effort="1000.0" lower="-1.5" upper="1.5" velocity="0.1"/>
+    <limit effort="1000.0" lower="-3" upper="3" velocity="1"/>
     <parent link="base_link"/>
     <child link="femur_4"/>
   </joint>
@@ -311,7 +295,7 @@
   <joint name="femur_to_tibia_1" type="revolute">
     <origin rpy="0 0 0" xyz="0.8 0 0"/>
     <axis xyz="0 1 0"/>
-    <limit effort="1000.0" lower="-1.5" upper="1.5" velocity="0.1"/>
+    <limit effort="1000.0" lower="-3" upper="3" velocity="1"/>
     <parent link="femur_1"/>
     <child link="tibia_1"/>
   </joint>
@@ -319,7 +303,7 @@
   <joint name="femur_to_tibia_2" type="revolute">
     <origin rpy="0 0 0" xyz="0 0.8 0"/>
     <axis xyz="-1 0 0"/>
-    <limit effort="1000.0" lower="-1.5" upper="1.5" velocity="0.1"/>
+    <limit effort="1000.0" lower="-3" upper="3" velocity="1"/>
     <parent link="femur_2"/>
     <child link="tibia_2"/>
   </joint>
@@ -327,7 +311,7 @@
   <joint name="femur_to_tibia_3" type="revolute">
     <origin rpy="0 0 0" xyz="-0.8 0 0"/>
     <axis xyz="0 -1 0"/>
-    <limit effort="1000.0" lower="-1.5" upper="1.5" velocity="0.1"/>
+    <limit effort="1000.0" lower="-3" upper="3" velocity="1"/>
     <parent link="femur_3"/>
     <child link="tibia_3"/>
   </joint>
@@ -335,7 +319,7 @@
   <joint name="femur_to_tibia_4" type="revolute">
     <origin rpy="0 0 0" xyz="0 -0.8 0"/>
     <axis xyz="1 0 0"/>
-    <limit effort="1000.0" lower="-1.5" upper="1.5" velocity="0.1"/>
+    <limit effort="1000.0" lower="-3" upper="3" velocity="1"/>
     <parent link="femur_4"/>
     <child link="tibia_4"/>
   </joint>
@@ -343,10 +327,10 @@
   <transmission name="tran1">
     <type>transmission_interface/SimpleTransmission</type>
     <joint name="base_to_femur_1">
-      <hardwareInterface>EffortJointInterface</hardwareInterface>
+      <hardwareInterface>VelocityJointInterface</hardwareInterface>
     </joint>
     <actuator name="motor1">
-      <hardwareInterface>EffortJointInterface</hardwareInterface>
+      <hardwareInterface>VelocityJointInterface</hardwareInterface>
       <mechanicalReduction>1</mechanicalReduction>
     </actuator>
   </transmission>
@@ -354,10 +338,10 @@
   <transmission name="tran2">
     <type>transmission_interface/SimpleTransmission</type>
     <joint name="base_to_femur_2">
-      <hardwareInterface>EffortJointInterface</hardwareInterface>
+      <hardwareInterface>VelocityJointInterface</hardwareInterface>
     </joint>
     <actuator name="motor2">
-      <hardwareInterface>EffortJointInterface</hardwareInterface>
+      <hardwareInterface>VelocityJointInterface</hardwareInterface>
       <mechanicalReduction>1</mechanicalReduction>
     </actuator>
   </transmission>
@@ -365,10 +349,10 @@
   <transmission name="tran3">
     <type>transmission_interface/SimpleTransmission</type>
     <joint name="base_to_femur_3">
-      <hardwareInterface>EffortJointInterface</hardwareInterface>
+      <hardwareInterface>VelocityJointInterface</hardwareInterface>
     </joint>
     <actuator name="motor3">
-      <hardwareInterface>EffortJointInterface</hardwareInterface>
+      <hardwareInterface>VelocityJointInterface</hardwareInterface>
       <mechanicalReduction>1</mechanicalReduction>
     </actuator>
   </transmission>
@@ -376,10 +360,10 @@
   <transmission name="tran4">
     <type>transmission_interface/SimpleTransmission</type>
     <joint name="base_to_femur_4">
-      <hardwareInterface>EffortJointInterface</hardwareInterface>
+      <hardwareInterface>VelocityJointInterface</hardwareInterface>
     </joint>
     <actuator name="motor4">
-      <hardwareInterface>EffortJointInterface</hardwareInterface>
+      <hardwareInterface>VelocityJointInterface</hardwareInterface>
       <mechanicalReduction>1</mechanicalReduction>
     </actuator>
   </transmission>
@@ -387,10 +371,10 @@
   <transmission name="tran5">
     <type>transmission_interface/SimpleTransmission</type>
     <joint name="femur_to_tibia_1">
-      <hardwareInterface>EffortJointInterface</hardwareInterface>
+      <hardwareInterface>VelocityJointInterface</hardwareInterface>
     </joint>
     <actuator name="motor5">
-      <hardwareInterface>EffortJointInterface</hardwareInterface>
+      <hardwareInterface>VelocityJointInterface</hardwareInterface>
       <mechanicalReduction>1</mechanicalReduction>
     </actuator>
   </transmission>
@@ -398,10 +382,10 @@
   <transmission name="tran6">
     <type>transmission_interface/SimpleTransmission</type>
     <joint name="femur_to_tibia_2">
-      <hardwareInterface>EffortJointInterface</hardwareInterface>
+      <hardwareInterface>VelocityJointInterface</hardwareInterface>
     </joint>
     <actuator name="motor6">
-      <hardwareInterface>EffortJointInterface</hardwareInterface>
+      <hardwareInterface>VelocityJointInterface</hardwareInterface>
       <mechanicalReduction>1</mechanicalReduction>
     </actuator>
   </transmission>
@@ -409,10 +393,10 @@
   <transmission name="tra71">
     <type>transmission_interface/SimpleTransmission</type>
     <joint name="femur_to_tibia_3">
-      <hardwareInterface>EffortJointInterface</hardwareInterface>
+      <hardwareInterface>VelocityJointInterface</hardwareInterface>
     </joint>
     <actuator name="motor7">
-      <hardwareInterface>EffortJointInterface</hardwareInterface>
+      <hardwareInterface>VelocityJointInterface</hardwareInterface>
       <mechanicalReduction>1</mechanicalReduction>
     </actuator>
   </transmission>
@@ -420,10 +404,10 @@
   <transmission name="tran8">
     <type>transmission_interface/SimpleTransmission</type>
     <joint name="femur_to_tibia_4">
-      <hardwareInterface>EffortJointInterface</hardwareInterface>
+      <hardwareInterface>VelocityJointInterface</hardwareInterface>
     </joint>
     <actuator name="motor8">
-      <hardwareInterface>EffortJointInterface</hardwareInterface>
+      <hardwareInterface>VelocityJointInterface</hardwareInterface>
       <mechanicalReduction>1</mechanicalReduction>
     </actuator>
   </transmission>
