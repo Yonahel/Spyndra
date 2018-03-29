@@ -8,6 +8,7 @@ import shutil
 import matplotlib.pyplot as plt
 from spyndra_env import SpyndraEnv
 
+
 OUTPUT_GRAPH = True
 LOG_DIR = './log'
 N_WORKERS = 1# multiprocessing.cpu_count()
@@ -21,11 +22,12 @@ LR_A = 0.0001    # learning rate for actor
 LR_C = 0.001    # learning rate for critic
 GLOBAL_RUNNING_R = []
 GLOBAL_EP = 0
-
+n_HA = 32
+n_HC = 32
 
 N_S = 90#env.observation_space.shape[0]
 N_A = 8#env.action_space.shape[0]
-A_BOUND = [-3, 3]#[env.action_space.low, env.action_space.high]
+A_BOUND = [-20, 20]#[env.action_space.low, env.action_space.high]
 
 
 class ACNet(object):
@@ -83,22 +85,23 @@ class ACNet(object):
     def _build_net(self, scope):
         w_init = tf.random_normal_initializer(0., .1)
         with tf.variable_scope('actor'):
-            l_a1 = tf.layers.dense(self.s, 512, tf.nn.relu6, kernel_initializer=w_init, name='la1')
-            l_a2 = tf.layers.dense(l_a1, 512, tf.nn.relu6, kernel_initializer=w_init, name='la2')
-	    l_a3 = tf.layers.dense(l_a2, 256, tf.nn.relu6, kernel_initializer=w_init, name='la3')
+            l_a1 = tf.layers.dense(self.s, n_HA, tf.nn.relu6, kernel_initializer=w_init, name='la1')
+            l_a2 = tf.layers.dense(l_a1, n_HA, tf.nn.relu6, kernel_initializer=w_init, name='la2')
+	    l_a3 = tf.layers.dense(l_a2, n_HA, tf.nn.relu6, kernel_initializer=w_init, name='la3')
 	    mu = tf.layers.dense(l_a3, N_A, tf.nn.tanh, kernel_initializer=w_init, name='mu')
             sigma = tf.layers.dense(l_a3, N_A, tf.nn.softplus, kernel_initializer=w_init, name='sigma')
         with tf.variable_scope('critic'):
-            l_c1 = tf.layers.dense(self.s, 256, tf.nn.relu6, kernel_initializer=w_init, name='lc1')
-            l_c2 = tf.layers.dense(l_c1, 256, tf.nn.relu6, kernel_initializer=w_init, name='lc2')
-	    l_c3 = tf.layers.dense(l_c2, 256, tf.nn.relu6, kernel_initializer=w_init, name='lc3')
+            l_c1 = tf.layers.dense(self.s, n_HC, tf.nn.relu6, kernel_initializer=w_init, name='lc1')
+            l_c2 = tf.layers.dense(l_c1, n_HC, tf.nn.relu6, kernel_initializer=w_init, name='lc2')
+	    l_c3 = tf.layers.dense(l_c2, n_HC, tf.nn.relu6, kernel_initializer=w_init, name='lc3')
 	    v = tf.layers.dense(l_c3, 1, kernel_initializer=w_init, name='v')  # state value
         a_params = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope=scope + '/actor')
         c_params = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope=scope + '/critic')
         return mu, sigma, v, a_params, c_params
 
     def update_global(self, feed_dict):  # run by a local
-        SESS.run([self.update_a_op, self.update_c_op], feed_dict)  # local grads applies to global net
+        #print "update global net"
+	SESS.run([self.update_a_op, self.update_c_op], feed_dict)  # local grads applies to global net
 
     def pull_global(self):  # run by a local
         SESS.run([self.pull_a_params_op, self.pull_c_params_op])
@@ -110,7 +113,7 @@ class ACNet(object):
 
 class Worker(object):
     def __init__(self, name, globalAC):
-        self.env = SpyndraEnv()
+        self.env = SpyndraEnv(N_S, N_A)
         self.name = name
         self.AC = ACNet(name, globalAC)
 
@@ -129,7 +132,12 @@ class Worker(object):
 	        s_, r, done, info = self.env._step(a, s)
                 #done = True if ep_t == MAX_EP_STEP - 1 else False
 		if self.name == 'W_0':
-			print(r, info, s_[:8])
+		#	pass
+			print()
+			print("distance to goal=", info, "reward=", r)
+			print("position before action=", list(s_[17:25]))
+			print("action=",list(a))
+			print("position after  action=", list(s_[:8]))
                 ep_r += r
                 buffer_s.append(s)
                 buffer_a.append(a)
@@ -175,8 +183,8 @@ if __name__ == "__main__":
     SESS = tf.Session()
 
     with tf.device("/cpu:0"):
-        OPT_A = tf.train.RMSPropOptimizer(LR_A, name='RMSPropA')
-        OPT_C = tf.train.RMSPropOptimizer(LR_C, name='RMSPropC')
+        OPT_A = tf.train.AdamOptimizer(LR_A, name='RMSPropA')
+        OPT_C = tf.train.AdamOptimizer(LR_C, name='RMSPropC')
         GLOBAL_AC = ACNet(GLOBAL_NET_SCOPE)  # we only need its params
         workers = []
         # Create worker
