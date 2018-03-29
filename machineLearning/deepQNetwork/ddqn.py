@@ -18,10 +18,11 @@ class DeepQNetwork:
 			memory_size=1000,
 			batch_size=32,
 			e_greedy_increment=None,
+			dueling=True,
 			output_graph=False,
+			dueling=True,
 	):
 		self.n_actions = n_actions
-		#self.n_features = n_features
 		self.n_features = n_features
 		self.lr = learning_rate
 		self.gamma = reward_decay
@@ -31,7 +32,7 @@ class DeepQNetwork:
 		self.batch_size = batch_size
 		self.epsilon_increment = e_greedy_increment
 		self.epsilon = 0 if e_greedy_increment is not None else self.epsilon_max
-
+		self.dueling = dueling
 		# total learning step
 		self.learn_step_counter = 0
 
@@ -58,62 +59,60 @@ class DeepQNetwork:
 		self.cost_his = []
 
 	def _build_net(self):
+		n_l1, n_l2, n_l3, w_initializer, b_initializer = 256, 256, 256, \
+				tf.random_normal_initializer(0., 0.03), tf.constant_initializer(0.01)  # config of layers
+		def build_layers(s, c_names, n_l1, n_l2, n_l3, w_initializer, b_initializer):
+			with tf.variable_scope('l1'):
+				w1 = tf.get_variable('w1', [self.n_features, n_l1], initializer=w_initializer, collections=c_names)
+				b1 = tf.get_variable('b1', [1, n_l1], initializer=b_initializer, collections=c_names)
+				l1 = tf.nn.relu(tf.matmul(s, w1) + b1)
+
+			with tf.variable_scope('l2'):
+				w2 = tf.get_variable('w2', [self.n_features, n_l2], initializer=w_initializer, collections=c_names)
+				b2 = tf.get_variable('b2', [1, n_l2], initializer=b_initializer, collections=c_names)
+				l2 = tf.nn.relu(tf.matmul(l1, w2) + b2)
+
+			if self.dueling:
+				# Dueling DQN
+				with tf.variable_scope('Value'):
+					w3 = tf.get_variable('w3', [n_l3, 1], initializer=w_initializer, collections=c_names)
+					b3 = tf.get_variable('b3', [1, 1], initializer=b_initializer, collections=c_names)
+					self.V = tf.matmul(l2, w3) + b3
+
+				with tf.variable_scope('Advantage'):
+					w3 = tf.get_variable('w3', [n_l1, self.n_actions], initializer=w_initializer, collections=c_names)
+					b3 = tf.get_variable('b3', [1, self.n_actions], initializer=b_initializer, collections=c_names)
+					self.A = tf.matmul(l2, w3) + b3
+
+				with tf.variable_scope('Q'):
+					out = self.V + (self.A - tf.reduce_mean(self.A, axis=1, keep_dims=True))     # Q = V(s) + A(s,a)
+			else:
+				with tf.variable_scope('Q'):
+					w3 = tf.get_variable('w3', [n_l1, self.n_actions], initializer=w_initializer, collections=c_names)
+					b3 = tf.get_variable('b3', [1, self.n_actions], initializer=b_initializer, collections=c_names)
+					out = tf.matmul(l2, w3) + b3
+
+			return out
+
 		# ------------------ build evaluate_net ------------------
 		self.s = tf.placeholder(tf.float32, [None, self.n_features], name='s')  # input
 		self.q_target = tf.placeholder(tf.float32, [None, self.n_actions], name='Q_target')  # for calculating loss
 		with tf.variable_scope('eval_net'):
-			# c_names(collections_names) are the collections to store variables
-			c_names, n_l1, n_l2, w_initializer, b_initializer = \
-				['eval_net_params', tf.GraphKeys.GLOBAL_VARIABLES], 256, 256,\
-				tf.random_normal_initializer(0., 0.03), tf.constant_initializer(0.01)  # config of layers
+			c_names = ['eval_net_params', tf.GraphKeys.GLOBAL_VARIABLES]
 
-			# first layer. collections is used later when assign to target net
-			with tf.variable_scope('l1'):
-				w1 = tf.get_variable('w1', [self.n_features, n_l1], initializer=w_initializer, collections=c_names)
-				b1 = tf.get_variable('b1', [1, n_l1], initializer=b_initializer, collections=c_names)
-				l1 = tf.nn.relu(tf.matmul(self.s, w1) + b1)
-
-			with tf.variable_scope('l2'):
-				w2 = tf.get_variable('w2', [n_l1, n_l2], initializer=w_initializer, collections=c_names)
-				b2 = tf.get_variable('b2', [1, n_l2], initializer=b_initializer, collections=c_names)
-				l2 = tf.nn.relu(tf.matmul(l1, w2) + b2)
-			
-			# second layer. collections is used later when assign to target net
-			with tf.variable_scope('l3'):
-				w3 = tf.get_variable('w3', [n_l2, self.n_actions], initializer=w_initializer, collections=c_names)
-				b3 = tf.get_variable('b3', [1, self.n_actions], initializer=b_initializer, collections=c_names)
-				self.q_eval = tf.matmul(l2, w3) + b3
+			self.q_eval = build_layers(self.s, c_names, n_l1, n_l2, n_l3, w_initializer, b_initializer)
 
 		with tf.variable_scope('loss'):
-			delta = self.q_target - self.q_eval
-			self.huber_loss = tf.where(tf.abs(delta) < 1.0, 0.5 * tf.square(delta), tf.abs(delta) - 0.5)
-			self.loss = tf.reduce_mean(self.huber_loss)
-			#self.loss = tf.reduce_mean(tf.squared_difference(self.q_target, self.q_eval))
+			self.loss = tf.reduce_mean(tf.squared_difference(self.q_target, self.q_eval))
 		with tf.variable_scope('train'):
-			self._train_op = tf.train.AdamOptimizer(self.lr).minimize(self.loss)
+			self._train_op = tf.train.RMSPropOptimizer(self.lr).minimize(self.loss)
 
 		# ------------------ build target_net ------------------
 		self.s_ = tf.placeholder(tf.float32, [None, self.n_features], name='s_')    # input
 		with tf.variable_scope('target_net'):
-			# c_names(collections_names) are the collections to store variables
 			c_names = ['target_net_params', tf.GraphKeys.GLOBAL_VARIABLES]
 
-			# first layer (35x10). collections is used later when assign to target net 
-			with tf.variable_scope('l1'):
-				w1 = tf.get_variable('w1', [self.n_features, n_l1], initializer=w_initializer, collections=c_names)
-				b1 = tf.get_variable('b1', [1, n_l1], initializer=b_initializer, collections=c_names)
-				l1 = tf.nn.relu(tf.matmul(self.s_, w1) + b1)
-
-			with tf.variable_scope('l2'):
-				w2 = tf.get_variable('w2', [n_l1, n_l2], initializer=w_initializer, collections=c_names)
-				b2 = tf.get_variable('b2', [1, n_l2], initializer=b_initializer, collections=c_names)
-				l2 = tf.nn.relu(tf.matmul(l1, w2) + b2)
-				
-			# second layer(10x3). collections is used later when assign to target net
-			with tf.variable_scope('l3'):
-				w3 = tf.get_variable('w3', [n_l2, self.n_actions], initializer=w_initializer, collections=c_names)
-				b3 = tf.get_variable('b3', [1, self.n_actions], initializer=b_initializer, collections=c_names)
-				self.q_next = tf.matmul(l2, w3) + b3
+			self.q_next = build_layers(self.s_, c_names, n_l1, n_l2, n_l3, w_initializer, b_initializer)
 
 	def store_transition(self, s, a, r, s_):
 		# Store the action(transition) into memory
@@ -131,7 +130,7 @@ class DeepQNetwork:
 	def check_feasible(self, observation, actions):
 		for action in actions:
 			motor_idx = action / 3
-			motor_del = (action % 3 - 1) * 5
+			motor_del = (action % 3 - 1) * 10
 			new_val = observation[motor_idx] + motor_del
 			if new_val < 0 or new_val > 1024:
 				continue

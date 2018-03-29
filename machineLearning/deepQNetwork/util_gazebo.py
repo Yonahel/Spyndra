@@ -208,12 +208,15 @@ class SpyndraEnv(gazebo_env.GazeboEnv):
 			print ("/gazebo/pause_physics service call failed")
 
 		# Time reward
-		time_reward = 60 - .1 * (time.time() - self.START_TIME)
-		
+		#time_reward = 60 - .1 * (time.time() - self.START_TIME)
+		time_reward = 0.
 		# Distance reward
-		dist2goal = np.linalg.norm(np.array(s_[15:18]) - self.GOAL)
-		dist_reward = (self.INIT_DIST - dist2goal) * 15. / self.INIT_DIST
-                print "dist to goal:", dist2goal, "dist reward:", dist_reward, "motor signal:", s_[:8]
+		#prev_dist2goal = np.linalg.norm(np.array(s_[33:36]) - self.GOAL)
+		curr_dist2goal = np.linalg.norm(np.array(s_[15:18]) - self.GOAL)
+		#dist_reward = - (curr_dist2goal - prev_dist2goal) * 100
+		#dist_reward = 1 if (curr_dist2goal - prev_dist2goal) < 0 else 0
+		dist_reward = (self.INIT_DIST - curr_dist2goal) * 15. / self.INIT_DIST
+                #print "dist to goal:", curr_dist2goal, "dist reward:", dist_reward, "motor signal:", s_[:8]
 		# Angel reward
 		#angl_reward = (2 * np.pi - angl2goal) * 15. / (2 * np.pi)
 
@@ -221,10 +224,10 @@ class SpyndraEnv(gazebo_env.GazeboEnv):
 		reward = time_reward + dist_reward * 2 #+ angl_reward
 	
 		# threshold TBD
-		if dist_reward == 15:
+		if curr_dist2goal < 1:
 			done = True
 		else:
 			done = False
 	
-		return s_, reward, done
+		return s_, reward, done, curr_dist2goal
 	
