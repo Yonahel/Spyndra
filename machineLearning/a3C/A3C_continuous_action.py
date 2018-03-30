@@ -12,8 +12,8 @@ from spyndra_env import SpyndraEnv
 OUTPUT_GRAPH = True
 LOG_DIR = './log'
 N_WORKERS = 1# multiprocessing.cpu_count()
-MAX_EP_STEP = 2000
-MAX_GLOBAL_EP = 1000
+MAX_EP_STEP = 400
+MAX_GLOBAL_EP = 2500
 GLOBAL_NET_SCOPE = 'Global_Net'
 UPDATE_GLOBAL_ITER = 10
 GAMMA = 0.9
@@ -135,7 +135,7 @@ class Worker(object):
                 if self.name == 'W_0':
                     print("Ep %4i, step %4i" % (GLOBAL_EP, ep_t))
                     print("distance to goal=", info, "reward=", r)
-                    print("position before action=", list(s_[17:25]))
+                    print("position before action=", list(s[:8]))
                     print("action=",list(a))
                     print("position after  action=", list(s_[:8]))
                 
