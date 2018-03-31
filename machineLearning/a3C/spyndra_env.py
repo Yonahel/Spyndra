@@ -103,14 +103,14 @@ class SpyndraEnv(gazebo_env.GazeboEnv):
         # initiate observation
         s_ = np.zeros(self.nS)
         # imu data update
-        imu_data = None
-        while imu_data is None:
-            try:
-                imu_data = rospy.wait_for_message('imu', Imu)
-                s_[8: 14] = [imu_data.linear_acceleration.x, imu_data.linear_acceleration.y, imu_data.linear_acceleration.z, \
-                             imu_data.angular_velocity.x,    imu_data.angular_velocity.y,    imu_data.angular_velocity.z]
-            except:
-                pass
+#        imu_data = None
+#        while imu_data is None:
+#            try:
+#                imu_data = rospy.wait_for_message('imu', Imu)
+#                s_[8: 14] = [imu_data.linear_acceleration.x, imu_data.linear_acceleration.y, imu_data.linear_acceleration.z, \
+#                             imu_data.angular_velocity.x,    imu_data.angular_velocity.y,    imu_data.angular_velocity.z]
+#            except:
+#                pass
         
         # motor data update
         motor_data = None
@@ -127,8 +127,9 @@ class SpyndraEnv(gazebo_env.GazeboEnv):
             try:
                 position_data = rospy.wait_for_message('/gazebo/model_states', ModelStates, timeout=5)
                 index = position_data.name.index("spyndra")
-                s_[14: 17] = [position_data.pose[index].position.x, position_data.pose[index].position.y, position_data.pose[index].position.y]
-                self.INIT_POS = np.array(s_[14: 17])
+                #s_[8: 11] = 
+		x, y, z = [position_data.pose[index].position.x, position_data.pose[index].position.y, position_data.pose[index].position.y]
+                self.INIT_POS = np.array([x, y, z])
                 self.GOAL = np.array(self.INIT_POS, copy=True)
                 self.GOAL[0] += 10
                 self.INIT_DIST = np.linalg.norm(self.INIT_POS - self.GOAL)
@@ -161,8 +162,8 @@ class SpyndraEnv(gazebo_env.GazeboEnv):
         s_ = s.copy()
         
         # if the observation contains previous state
-        if len(s) > 17:
-            s_ = np.hstack((np.zeros(17), s_[ :-17]))
+        if len(s) > 8:
+            s_ = np.hstack((np.zeros(8), s_[ :-8]))
         
         # update motor position
 	self.torque = 0.
@@ -182,32 +183,33 @@ class SpyndraEnv(gazebo_env.GazeboEnv):
         s_time = time.time()
         
         # imu data update
-        imu_data = None
-        while imu_data is None:
-            try:
-                imu_data = rospy.wait_for_message('imu', Imu, timeout=5)
-                s_[8: 14] = [imu_data.linear_acceleration.x, imu_data.linear_acceleration.y, imu_data.linear_acceleration.z, \
-                             imu_data.angular_velocity.x,    imu_data.angular_velocity.y,    imu_data.angular_velocity.z]
-            except:
-                pass
+#        imu_data = None
+#        while imu_data is None:
+#            try:
+#                imu_data = rospy.wait_for_message('imu', Imu, timeout=5)
+#                s_[8: 14] = [imu_data.linear_acceleration.x, imu_data.linear_acceleration.y, imu_data.linear_acceleration.z, \
+#                             imu_data.angular_velocity.x,    imu_data.angular_velocity.y,    imu_data.angular_velocity.z]
+#            except:
+#                pass
         
-        #motor_data = np.zeros(8)
-        #while (time.time() - s_time) < .1:
         motor_data = None
+        #while (time.time() - s_time) < .1:
+        #motor_data = None
         while motor_data is None:
             try:
                 motor_data = rospy.wait_for_message('motor_state', MotorSignal, timeout=5)
                 s_[:8] = np.array(motor_data.signal)
-            except:
+            	
+	    except:
                 pass
         
         # position data update
         position_data = None
-        while position_data is None:
+	while position_data is None:
             try:
                 position_data = rospy.wait_for_message('/gazebo/model_states', ModelStates, timeout=5)
                 index = position_data.name.index("spyndra")
-                s_[14: 17] = [position_data.pose[index].position.x, position_data.pose[index].position.y, position_data.pose[index].position.y]
+                position_data =  [position_data.pose[index].position.x, position_data.pose[index].position.y, position_data.pose[index].position.y]
             except:
                 pass
 
@@ -223,7 +225,7 @@ class SpyndraEnv(gazebo_env.GazeboEnv):
         #time_reward = 0.
         
         ## Distance reward
-        curr_dist2goal = np.linalg.norm(np.array(s_[14:17]) - self.GOAL)
+        curr_dist2goal = np.linalg.norm(np.array(position_data) - self.GOAL)
         dist_reward = (self.INIT_DIST - curr_dist2goal) * 15. / self.INIT_DIST
         #print "dist to goal:", curr_dist2goal, "dist reward:", dist_reward, "motor signal:", s_[:8]
         

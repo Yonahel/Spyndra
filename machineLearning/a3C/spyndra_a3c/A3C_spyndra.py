@@ -125,7 +125,7 @@ class Worker(object):
         buffer_s, buffer_a, buffer_r = [], [], []
         while not COORD.should_stop() and GLOBAL_EP < MAX_GLOBAL_EP:
             s = self.env._reset()
-            ep_r, dist_traveled = 0, -999.
+            ep_r = 0
             for ep_t in range(MAX_EP_STEP):
                 # if self.name == 'W_0':
                 #     self.env.render()
@@ -143,8 +143,7 @@ class Worker(object):
                 buffer_s.append(s)
                 buffer_a.append(a)
                 buffer_r.append(r) 
-		dist_traveled = 10. - info
-		print("dist_traveled", dist_traveled)
+
                 if total_step % UPDATE_GLOBAL_ITER == 0 or done:   # update global and assign to local net
                     if done:
                         v_s_ = 0   # terminal reward (based on A3C pesudo code)
@@ -181,7 +180,7 @@ class Worker(object):
                     break
             GLOBAL_EP += 1
 	    with open('ep_reward.txt', 'a') as f:
-		f.write('ep=%i, reward=%d, distence traveled=%f\n' % (GLOBAL_EP, ep_r, dist_traveled))
+		f.write('ep=%i, reward=%d\n' % (GLOBAL_EP, ep_r))
 
 
 if __name__ == "__main__":
