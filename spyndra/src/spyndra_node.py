@@ -32,7 +32,20 @@ def callback(msg):
     '''outoput signal to id and goal position, assume chassis 1-4 are assigned '''
 
     # motors.moveSpeed(motor_id, output, speed)
+    
+    '''get actual position of the motor, and then publish it back to control_node'''
+    '''right now i simply set them as dummy'''
+    actual_position = 512
+    actual_speed = 200
+    actual_id = 0
 
+    pub = rospy.Publisher('/actual_signal', MotorSignal, queue_size=10)
+    motor_state = MotorSignal()
+    motor_state.motor_id = actual_id
+    motor_state.speed = acutal_speed
+    motor_state.signal = actual_position
+
+    pub.publish(motor_state)
 
     
 
