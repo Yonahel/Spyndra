@@ -1,0 +1,8 @@
+prefix=/home/pi/Desktop/Spyndra/spyndra/devel
+
+Name: spyndra
+Description: Description of spyndra
+Version: 0.0.0
+Cflags: -I/home/pi/Desktop/Spyndra/spyndra/devel/include
+Libs: -L/home/pi/Desktop/Spyndra/spyndra/devel/lib 
+Requires: message_runtime

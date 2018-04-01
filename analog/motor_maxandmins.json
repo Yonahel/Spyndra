@@ -1,6 +1,0 @@
-{
-  "femur_max_values": "[array([ 329.]), array([ 314.]), array([ 319.]), array([ 316.])]", 
-  "tibia_min_values": "[array([ 269.]), array([ 229.]), array([ 242.]), array([ 250.])]", 
-  "femur_min_values": "[array([ 229.]), array([ 214.]), array([ 219.]), array([ 216.])]", 
-  "tibia_max_values": "[array([ 384.]), array([ 344.]), array([ 357.]), array([ 365.])]"
-}
