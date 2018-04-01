@@ -57,13 +57,13 @@ from subprocess import Popen, PIPE
 
 class ControlNode:
     CHASSIS_1_ID = 1
-    CHASSIS_2_ID = 2
-    CHASSIS_3_ID = 3
-    CHASSIS_4_ID = 4
+    CHASSIS_2_ID = 3
+    CHASSIS_3_ID = 5
+    CHASSIS_4_ID = 7
 
-    TIBIA_1_ID = 5
-    TIBIA_2_ID = 6
-    TIBIA_3_ID = 7
+    TIBIA_1_ID = 2
+    TIBIA_2_ID = 4
+    TIBIA_3_ID = 6
     TIBIA_4_ID = 8
 
     def __init__(self):
