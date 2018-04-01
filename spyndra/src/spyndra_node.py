@@ -35,6 +35,8 @@ TIBIA_3_MAX = 819
 TIBIA_4_MIN = 203
 TIBIA_4_MAX = 816
 
+PORT = '/dev/ttyACM0'
+
 def callback(msg):
     speed = msg.speed
     motor_id = msg.motor_id
@@ -44,40 +46,38 @@ def callback(msg):
     rospy.loginfo(s)
     '''connect to 8 motors in a serial'''
 
-    motors = ax12.Ax12()
+    motors = ax12.Ax12(port=PORT)
 
     '''checking the output signal to prevent overloading'''
     if output >= 195 and output =< 875:
         '''outoput signal to id and goal position, assume chassis 1-4 are assigned '''
         error_code = motors.moveSpeed(motor_id, output, speed)
-        
-        '''get actual position of the motor, and then publish it back to control_node'''
-        '''right now i simply set them as dummy'''
-        actual_position = ax12.readPosition(motor_id)
-        actual_speed = ax12.readPresentSpeed(motor_id)
-        actual_load = ax12.readLoad(motor_id)
-        actual_id = motor_id
-        action_error = error_code
-
-        pub = rospy.Publisher('/actual_signal', MotorSignal, queue_size=10)
-        motor_state = MotorSignal()
-        motor_state.motor_id = actual_id
-        motor_state.speed = acutal_speed
-        motor_state.signal = actual_position
-        motor_state.load = actual_load
-        motor_state.action_error = action_error
-
     else:
-        pub = rospy.Publisher('/actual_signal', MotorSignal, queue_size=10)
-        motor_state.action_error = -1 # exceeding the minmax, no movements
-    pub.publish(motor_state)
+        error_code = -1
+
 
     
 
 def main():
     rospy.init_node('spyndra', anonymous=True)
     rospy.Subscriber('/motor_signal', MotorSignal, callback)
+    pub = rospy.Publisher('/actual_signal', MotorSignal, queue_size=10)
     rospy.spin()
+    motors = ax12.Ax12(port=PORT)
+    while not rospy.is_shutdown():
+        sleep(.1)
+        #keep publish current position
+        for i in range(8):
+            '''get actual position of the motor, and then publish it back to control_node'''
+            '''right now i simply set them as dummy'''
+            motor_id = i+1
+
+            motor_state = MotorSignal()
+            motor_state.motor_id = i+1
+            motor_state.speed = ax12.readPresentSpeed(motor_id)
+            motor_state.signal = ax12.readPosition(motor_id)
+            motor_state.load = ax12.readLoad(motor_id)
+            pub.publish(motor_state)
 
 if __name__ == '__main__':
     main()
