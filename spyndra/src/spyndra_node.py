@@ -3,7 +3,6 @@ import rospy
 from std_msgs.msg import String
 from spyndra.msg import MotorSignal
 from spyndra import ax12
-# from spyndra import adafruitModule
 import ast
 
 CHASSIS_1_ID = 1
@@ -27,23 +26,25 @@ def callback(msg):
     rospy.loginfo(s)
     '''connect to 8 motors in a serial'''
 
-    # motors = ax12.Ax12()
+    motors = ax12.Ax12()
 
     '''outoput signal to id and goal position, assume chassis 1-4 are assigned '''
 
-    # motors.moveSpeed(motor_id, output, speed)
+    motors.moveSpeed(motor_id, output, speed)
     
     '''get actual position of the motor, and then publish it back to control_node'''
     '''right now i simply set them as dummy'''
-    actual_position = 512
-    actual_speed = 200
-    actual_id = 0
+    actual_position = ax12.readPosition(motor_id)
+    actual_speed = ax12.readPresentSpeed(motor_id)
+    actual_load = ax12.readLoad(motor_id)
+    actual_id = motor_id
 
     pub = rospy.Publisher('/actual_signal', MotorSignal, queue_size=10)
     motor_state = MotorSignal()
     motor_state.motor_id = actual_id
     motor_state.speed = acutal_speed
     motor_state.signal = actual_position
+    motor_state.load = actual_load
 
     pub.publish(motor_state)
 
