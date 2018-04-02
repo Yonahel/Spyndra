@@ -49,7 +49,7 @@ def callback(msg):
     motors = ax12.Ax12(port=PORT)
 
     '''checking the output signal to prevent overloading'''
-    if output >= 195 and output =< 875:
+    if output >= 195 and output <= 875:
         '''outoput signal to id and goal position, assume chassis 1-4 are assigned '''
         error_code = motors.moveSpeed(motor_id, output, speed)
     else:
