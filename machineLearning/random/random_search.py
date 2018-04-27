@@ -11,21 +11,23 @@ from spyndra_env import SpyndraEnv
 
 
 N_WORKERS = 1# multiprocessing.cpu_count()
-MAX_GLOBAL_EP = 2500
+MAX_GLOBAL_EP = 500
 GLOBAL_RUNNING_R = []
 GLOBAL_EP = 0
 MAX_STEP = 20
 
+# N_S is for reinforcement learning
 n_previous_state = 0
-N_S = 8 * (1+n_previous_state)
+N_S = 14 * (1+n_previous_state)
 N_A = 8
-A_BOUND = [-5, 5]#[env.action_space.low, env.action_space.high]
 
+
+# joint position can be 0-1023, this is for prevetion of self-collision
 minFemur, maxFemur = 350, 630
 minTibia, maxTibia = 650, 890
 
 class RandomSearch():
-    def __init__(self, As=8, n_gates=10, n_patterns=2, evolve_rate=0.5):
+    def __init__(self, As=8, n_gates=10, n_patterns=20, evolve_rate=0.25):
         self.As = As #action space
         self.n_gates = n_gates #number of gates for each pattern
         self.n_patterns = n_patterns #number of patterns for each episode
@@ -41,33 +43,19 @@ class RandomSearch():
     def update(self, reward):
         '''
         1. Select top `evolve_rate` percent of patterns, keep them. 
-        2. Add gaussian noise to thosed kept patterns
-        3. Randomly generate new patterns to totaly n different patterns
+        2. Randomly generate other n*(1-evolve_rate) new patterns
+        3. Concat
         '''
-        # step 1, 2
         n_keep = int(self.n_patterns * self.evolve_rate)
         top_idx = sorted(range(len(reward)), key=lambda k: reward[k], reverse=True)[ :n_keep]
         self.patterns = self.patterns[top_idx]
-        for i in range(len(self.patterns)):
-            for k in range(self.n_gates):
-                # Femur
-                for j in range(self.As/2):
-                    gate = self.patterns[i, j, k]
-                    noise = np.random.normal(loc=0, scale=min(abs(gate-minFemur), abs(gate-maxFemur))/2)
-                    self.patterns[i, j, k] = self.clip(gate + noise, 350, 630)
-                # Tibia
-                for j in range(self.As/2, self.As):
-                    gate = self.patterns[i, j, k]
-                    noise = np.random.normal(loc=0, scale=min(abs(gate-minTibia), abs(gate-maxTibia))/2)
-                    self.patterns[i, j, k] = self.clip(gate + noise, 650, 890)
-        
-        # step 3
+
         n_to_generate = self.n_patterns - n_keep
         self.femur_patterns = np.random.randint(low=minFemur, high=maxFemur, size=(n_to_generate, self.As/2, self.n_gates))
         self.tibia_patterns = np.random.randint(low=minTibia, high=maxTibia, size=(n_to_generate, self.As/2, self.n_gates))
         self.new_patterns = np.concatenate((self.femur_patterns, self.tibia_patterns), axis=1)
-        print(self.patterns.shape, self.new_patterns.shape)
-	self.patterns = np.concatenate((self.patterns, self.new_patterns), axis=0)
+
+        self.patterns = np.concatenate((self.patterns, self.new_patterns), axis=0)
 
     def choose_action(self, idx_pattern, step):
         return self.patterns[idx_pattern, :, step]
@@ -116,7 +104,7 @@ class Worker(object):
             GLOBAL_EP += 1
             print("Best pattern traveled for", max(rewards))
             with open('ep_reward.txt', 'a') as f:
-                f.write('ep=%i, distence traveled=%f\n' % (GLOBAL_EP, max(rewards)))
+                f.write('ep=%i, distence traveled=%f\n' % (GLOBAL_EP, np.mean(sorted(rewards)[-5:])))
 
 
 if __name__ == "__main__":

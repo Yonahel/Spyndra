@@ -11,24 +11,27 @@ from spyndra_env import SpyndraEnv
 
 OUTPUT_GRAPH = True
 LOG_DIR = './log'
+'''
+ROS simulation didn't implement multiprocessing..., so only 1 workers now.
+'''
 N_WORKERS = 1# multiprocessing.cpu_count()
-MAX_EP_STEP = 800
-MAX_GLOBAL_EP = 2500
+MAX_EP_STEP = 400
+MAX_GLOBAL_EP = 5000
 GLOBAL_NET_SCOPE = 'Global_Net'
 UPDATE_GLOBAL_ITER = 10
 GAMMA = 0.9
 ENTROPY_BETA = 0.01
-LR_A = 0.0001   # learning rate for actor
-LR_C = 0.001    # learning rate for critic
+LR_A = 0.0002   # learning rate for actor
+LR_C = 0.0002   # learning rate for critic
 GLOBAL_RUNNING_R = []
 GLOBAL_EP = 0
-n_HA = 32
-n_HC = 32
-n_previous_state = 0
+n_HA = 100
+n_HC = 100
+n_previous_state = 2
 
-N_S = 8 * (1+n_previous_state)
+N_S = 14 * (1+n_previous_state)
 N_A = 8
-A_BOUND = [-5, 5]#[env.action_space.low, env.action_space.high]
+A_BOUND = [-1, 1] #[env.action_space.low, env.action_space.high]
 
 
 class ACNet(object):
@@ -84,7 +87,7 @@ class ACNet(object):
                     self.update_c_op = OPT_C.apply_gradients(zip(self.c_grads, globalAC.c_params))
 
     def _build_net(self, scope):
-        w_init = tf.random_normal_initializer(0., .1)
+        w_init = tf.random_normal_initializer(0., .05)
         with tf.variable_scope('actor'):
             l_a1 = tf.layers.dense(self.s, n_HA, tf.nn.relu6, kernel_initializer=w_init, name='la1')
             l_a2 = tf.layers.dense(l_a1, n_HA, tf.nn.relu6, kernel_initializer=w_init, name='la2')
@@ -102,8 +105,8 @@ class ACNet(object):
 
     def update_global(self, feed_dict):  # run by a local
         #print "update global net"
-        SESS.run([self.update_a_op, self.update_c_op], feed_dict)  # local grads applies to global net
-
+        al, cl, _, _ = SESS.run([self.a_loss, self.c_loss, self.update_a_op, self.update_c_op], feed_dict)  # local grads applies to global net
+        return al, cl
     def pull_global(self):  # run by a local
         SESS.run([self.pull_a_params_op, self.pull_c_params_op])
 
@@ -111,6 +114,12 @@ class ACNet(object):
         s = s[np.newaxis, :]
         return SESS.run(self.A, {self.s: s})[0]
 
+def normalize(s):
+    s[ :4]  = (s[ :4] - 350.) / 280.
+    s[4:8]  = (s[4:8] - 650.) / 240.
+    s[8:11] = np.nan_to_num(s[8:11] / np.linalg.norm(s[8:11]))
+    s[11:14] = np.nan_to_num(s[11:14] / np.linalg.norm(s[11:14]))
+    return s
 
 class Worker(object):
     def __init__(self, name, globalAC):
@@ -136,15 +145,19 @@ class Worker(object):
                     print("Ep %4i, step %4i" % (GLOBAL_EP, ep_t))
                     print("distance to goal=", info, "reward=", r)
                     print("position before action=", list(s[:8]))
-                    print("action=",list(a))
+                    print("action=", list((np.array(a)*10).round()))
                     print("position after  action=", list(s_[:8]))
                 
                 ep_r += r
+                # normalize state before sending into A3C
+                s = np.array(s)
+                s_[14:28] = normalize(s_[14:28])
+                s[:14] = normalize(s[:14])
                 buffer_s.append(s)
                 buffer_a.append(a)
-                buffer_r.append(r) 
-		dist_traveled = 10. - info
-		print("dist_traveled", dist_traveled)
+                buffer_r.append(r/10.) 
+                dist_traveled = 10. - info
+                print("dist_traveled", dist_traveled)
                 if total_step % UPDATE_GLOBAL_ITER == 0 or done:   # update global and assign to local net
                     if done:
                         v_s_ = 0   # terminal reward (based on A3C pesudo code)
@@ -162,10 +175,12 @@ class Worker(object):
                         self.AC.a_his: buffer_a,
                         self.AC.v_target: buffer_v_target,
                     }
-                    self.AC.update_global(feed_dict)
+                    a_l, c_l = self.AC.update_global(feed_dict)
                     buffer_s, buffer_a, buffer_r = [], [], []
                     self.AC.pull_global()
-
+                    with open('loss.txt', 'a') as f:
+                        f.write("A loss="+ str(a_l) + ", C loss=" + str(c_l) + "\n")
+                    print("A loss = ", a_l, "C loss = ", c_l)
                 s = s_
                 total_step += 1
                 if done:
@@ -180,8 +195,8 @@ class Worker(object):
                           )
                     break
             GLOBAL_EP += 1
-	    with open('ep_reward.txt', 'a') as f:
-		f.write('ep=%i, reward=%d, distence traveled=%f\n' % (GLOBAL_EP, ep_r, dist_traveled))
+            with open('ep_reward.txt', 'a') as f:
+                f.write('ep=%i, reward=%d, distence traveled=%f\n' % (GLOBAL_EP, ep_r, dist_traveled))
 
 
 if __name__ == "__main__":

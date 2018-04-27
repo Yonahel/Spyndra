@@ -46,7 +46,6 @@ class SpyndraEnv(gazebo_env.GazeboEnv):
         # Unpause simulation to make observation
         rospy.wait_for_service('/gazebo/unpause_physics')
         try:
-            #resp_pause = pause.call()
             self.unpause()
         except (rospy.ServiceException) as e:
             print ("/gazebo/unpause_physics service call failed")
@@ -88,21 +87,23 @@ class SpyndraEnv(gazebo_env.GazeboEnv):
         time.sleep(1)
 
         # stand up
-	try:
-       	# Wait for robot to be ready to accept signal
-		rospy.wait_for_message('motor_state', MotorSignal, timeout=5)
-	        motor_signal = MotorSignal()
-	        motor_signal.motor_type = 1
-		# femeor 400~630
-		# tibia  650~900
-		motor_signal.signal = [512, 512, 512, 512, 820, 820, 820, 820]
-	        self.action_publisher.publish(motor_signal)
-	except:
-	        print ("cannot publish action")
+        try:
+           	# Wait for robot to be ready to accept signal
+            rospy.wait_for_message('motor_state', MotorSignal, timeout=5)
+            motor_signal = MotorSignal()
+            motor_signal.motor_type = 1
+            motor_signal.signal = [512, 512, 512, 512, 820, 820, 820, 820]
+            self.action_publisher.publish(motor_signal)
+        except:
+            print ("cannot publish action")
+        
         time.sleep(7)
+        
         # initiate observation
         s_ = np.zeros(self.nS)
-        # imu data update
+
+# older gazebo version always have different initial IMU info after reset, keep them zero
+#        # imu data update
 #        imu_data = None
 #        while imu_data is None:
 #            try:
@@ -128,7 +129,7 @@ class SpyndraEnv(gazebo_env.GazeboEnv):
                 position_data = rospy.wait_for_message('/gazebo/model_states', ModelStates, timeout=5)
                 index = position_data.name.index("spyndra")
                 #s_[8: 11] = 
-		x, y, z = [position_data.pose[index].position.x, position_data.pose[index].position.y, position_data.pose[index].position.y]
+                x, y, z = [position_data.pose[index].position.x, position_data.pose[index].position.y, position_data.pose[index].position.y]
                 self.INIT_POS = np.array([x, y, z])
                 self.GOAL = np.array(self.INIT_POS, copy=True)
                 self.GOAL[0] += 10
@@ -147,12 +148,17 @@ class SpyndraEnv(gazebo_env.GazeboEnv):
         return s_
 
     def clip_signal(self, x, Min, Max):
-	if x < Min or x > Max:
-		self.torque += 1.
-	return max(min(Max, x), Min)
+        '''
+        clip joint position between min and max values
+        '''
+        if x < Min or x > Max:
+            self.torque += 1.
+        return max(min(Max, x), Min)
 
     def _step(self, action, s):
-        # take action and update the observation(state)
+        '''
+        take action and update the observation(state)
+        '''
         rospy.wait_for_service('/gazebo/unpause_physics')
         try:
                 self.unpause()
@@ -162,50 +168,50 @@ class SpyndraEnv(gazebo_env.GazeboEnv):
         s_ = s.copy()
         
         # if the observation contains previous state
-        if len(s) > 8:
-            s_ = np.hstack((np.zeros(8), s_[ :-8]))
+        if len(s) > 14:
+            s_ = np.hstack((np.zeros(14), s_[ :-14]))
         
         # update motor position
-	self.torque = 0.
+        self.torque = 0.
         try:
             motor_signal = MotorSignal()
             motor_signal.motor_type = 1
-            s_[:8] = s[:8]
-	    for i in range(4):
-		s_[i] = self.clip_signal(s_[i], 320, 630)
-	    for i in range(4, 8, 1):
-		s_[i] = self.clip_signal(s_[i], 650, 890)
+            s_[:8] = action
+            for i in range(4):
+                s_[i] = self.clip_signal(s_[i], 350, 630)
+            for i in range(4, 8, 1):
+                s_[i] = self.clip_signal(s_[i], 650, 890)
             motor_signal.signal = action
-            #print "published signal", motor_signal.signal
             self.action_publisher.publish(motor_signal)
         except:
             print ("cannot publish action")
+        
         s_time = time.time()
         
         # imu data update
-#        imu_data = None
-#        while imu_data is None:
-#            try:
-#                imu_data = rospy.wait_for_message('imu', Imu, timeout=5)
-#                s_[8: 14] = [imu_data.linear_acceleration.x, imu_data.linear_acceleration.y, imu_data.linear_acceleration.z, \
-#                             imu_data.angular_velocity.x,    imu_data.angular_velocity.y,    imu_data.angular_velocity.z]
-#            except:
-#                pass
+        imu_data = None
+        while imu_data is None:
+            try:
+                imu_data = rospy.wait_for_message('imu', Imu, timeout=5)
+                s_[8: 14] = [imu_data.linear_acceleration.x, imu_data.linear_acceleration.y, imu_data.linear_acceleration.z, \
+                             imu_data.angular_velocity.x,    imu_data.angular_velocity.y,    imu_data.angular_velocity.z]
+            except:
+                pass
         
+        # joint position update
         motor_data = None
-        while (time.time() - s_time) < 2:
+        while (time.time() - s_time) < 1.8: # large gates take longer time
         #motor_data = None
         #while motor_data is None:
             try:
                 motor_data = rospy.wait_for_message('motor_state', MotorSignal, timeout=5)
                 s_[:8] = np.array(motor_data.signal)
-            	
-	    except:
+            except:
                 pass
         
         # position data update
         position_data = None
-	while position_data is None:
+        while position_data is None:
             try:
                 position_data = rospy.wait_for_message('/gazebo/model_states', ModelStates, timeout=5)
                 index = position_data.name.index("spyndra")
@@ -230,13 +236,12 @@ class SpyndraEnv(gazebo_env.GazeboEnv):
         #print "dist to goal:", curr_dist2goal, "dist reward:", dist_reward, "motor signal:", s_[:8]
         
         ## Angel reward
-	angl_reward = 0
+        angl_reward = 0
         #angl_reward = (2 * np.pi - angl2goal) * 15. / (2 * np.pi)
 
         ## Torque reward
-	torq_reward = -self.torque * 5
-	print(self.torque)
-	reward = time_reward + dist_reward * 5 + torq_reward + angl_reward
+        torq_reward = -self.torque * 5 
+        reward = time_reward + dist_reward * 5 + torq_reward + angl_reward
     
         # threshold TBD
         if curr_dist2goal < 1:

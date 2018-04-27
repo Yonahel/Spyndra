@@ -5,8 +5,8 @@ np.random.seed(1)
 tf.set_random_seed(1)
 
 
-# Deep Q Network off-policy
-class DeepQNetwork:
+# Dueling Deep Q Network off-policy
+class DuelingDeepQNetwork:
 	def __init__(
 			self,
 			n_actions,
