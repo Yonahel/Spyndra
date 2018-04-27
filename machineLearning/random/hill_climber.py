@@ -46,9 +46,12 @@ class HillClimber():
         n_keep = int(self.n_patterns * self.evolve_rate)
         n_new = int(self.n_patterns / n_keep)
         top_idx = sorted(range(len(reward)), key=lambda k: reward[k], reverse=True)[ :n_keep]
-        self.new_patterns = self.patterns.copy()
+        n_to_generate = self.n_patterns - n_keep
+        
+        self.new_patterns = self.patterns.copy()[:n_to_generate]
         self.patterns = self.patterns[top_idx]
-        for i in range(self.n_patterns):
+        
+        for i in range((self.n_patterns-n_keep)):
             idx = int(i/n_new)
             for k in range(self.n_gates):
                 # Femur
@@ -62,7 +65,7 @@ class HillClimber():
                     noise = np.random.normal(loc=0, scale=min(abs(gate-minTibia), abs(gate-maxTibia))/2)
                     self.new_patterns[i, j, k] = self.clip(gate + noise, 650, 890)
     
-        self.patterns = self.new_patterns
+        self.patterns = np.concatenate((self.patterns, self.new_patterns), axis=0)
 
     def choose_action(self, idx_pattern, step):
         return self.patterns[idx_pattern, :, step]
