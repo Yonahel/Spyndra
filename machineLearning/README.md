@@ -64,7 +64,7 @@ cd a3C/
 python A3C_continuous_action.py
 ```
 
-Note that this code is unstable due to Gazebo's inner bug for simulation. Also, simulation team didn't add multiprocessing environment for A3C, so it is basically A2C.
+Note that this code is unstable due to Gazebo's inner bug for simulation. Also, this A3C code currently only suply single process, so it is basically A2C.
 
 ## Acknowledgement
 
