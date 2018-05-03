@@ -62,22 +62,20 @@ def main():
     rospy.init_node('spyndra', anonymous=True)
     rospy.Subscriber('/motor_signal', MotorSignal, callback)
     pub = rospy.Publisher('/actual_signal', MotorSignal, queue_size=10)
-    rospy.spin()
     motors = ax12.Ax12(port=PORT)
     while not rospy.is_shutdown():
-        sleep(.1)
         #keep publish current position
         for i in range(8):
             '''get actual position of the motor, and then publish it back to control_node'''
             '''right now i simply set them as dummy'''
             motor_id = i+1
-
             motor_state = MotorSignal()
             motor_state.motor_id = i+1
             motor_state.speed = ax12.readPresentSpeed(motor_id)
             motor_state.signal = ax12.readPosition(motor_id)
             motor_state.load = ax12.readLoad(motor_id)
             pub.publish(motor_state)
+            rospy.loginfo(motor_state)
 
 if __name__ == '__main__':
     main()
