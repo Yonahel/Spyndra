@@ -44,14 +44,13 @@ class Server:
 
             # calibration
             if data == '0':
-                # note there might be a bad descriptor problem when launching the user interface
+                # note there might be a bad descriptor problem when user node publishes command code
                 t_user = threading.Thread(target=self.threaded_run, args=['rosrun spyndra user.py 0'])#, kwargs={'stdin_msg':data})
                 t_user.start()  
 
             # stand
             if data == '1':
                 # start user node
-                # note there might be a bad descriptor problem when launching the user interface
                 t_user = threading.Thread(target=self.threaded_run, args=['rosrun spyndra user.py 1'])#, kwargs={'stdin_msg':data})
                 t_user.start()     
 
