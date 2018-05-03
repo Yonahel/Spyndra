@@ -18,4 +18,4 @@ $ python ui.py
 ```
 
 remaining issues:
-1. note there might be a bad descriptor problem when user node publishes command code through channel /user_cmd
+1. note there might be a bad descriptor problem when user node publishes command code through channel /user_cmd 
