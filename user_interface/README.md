@@ -12,10 +12,7 @@ A prompt will show if the connection succeeded or not.
 3. Click the command button and the command code will be sent to the remote server
 
 ## Remote Server
-1. the remote server has to be running at the boot of the 
-```
-$ python ui.py
-```
+1. the remote server has to be running at startup of spyndra
 
 remaining issues:
-1. note there might be a bad descriptor problem when user node publishes command code through channel /user_cmd 
+1. there is a bad descriptor problem when user node publishes command code through channel /user_cmd 
