@@ -73,6 +73,8 @@ class Server:
                     self.sock.send('-1')
                 except:
                     pass
+                subprocess.Popen('killall -9 roscore')
+                subprocess.Popen('rosnode kill --all')
                 self.connected = False
                 sys.exit(0)
 
@@ -85,7 +87,7 @@ class Server:
 
     def send_signal(self):
         while True:
-            self.sock.send('0thisisatestmsg\n1thisisanothertest')
+            self.sock.send('0thisisatestmsg\n')
 
 
 
